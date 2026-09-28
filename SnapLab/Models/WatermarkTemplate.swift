@@ -22,6 +22,21 @@ public enum WatermarkCategory: String, CaseIterable, Codable, Identifiable {
         case .custom: return "slider.horizontal.3"
         }
     }
+    
+    public func localizedName(in language: AppLanguage) -> String {
+        switch language {
+        case .vietnamese: return rawValue
+        case .english:
+            switch self {
+            case .engineering: return "Engineering"
+            case .attendance: return "Attendance"
+            case .patrol: return "Patrol"
+            case .travel: return "Travel"
+            case .minimal: return "Minimal"
+            case .custom: return "Custom"
+            }
+        }
+    }
 }
 
 // MARK: - Watermark Position
@@ -43,6 +58,20 @@ public enum WatermarkPosition: String, CaseIterable, Codable, Identifiable {
         case .centerBottom: return .bottom
         }
     }
+    
+    public func localizedName(in language: AppLanguage) -> String {
+        switch language {
+        case .vietnamese: return rawValue
+        case .english:
+            switch self {
+            case .bottomLeft: return "Bottom Left"
+            case .bottomRight: return "Bottom Right"
+            case .topLeft: return "Top Left"
+            case .topRight: return "Top Right"
+            case .centerBottom: return "Center Bottom"
+            }
+        }
+    }
 }
 
 // MARK: - Watermark Theme Color
@@ -55,6 +84,21 @@ public enum WatermarkColorTheme: String, CaseIterable, Codable, Identifiable {
     case crispWhite = "Trắng tinh khiết"
     
     public var id: String { rawValue }
+    
+    public func localizedName(in language: AppLanguage) -> String {
+        switch language {
+        case .vietnamese: return rawValue
+        case .english:
+            switch self {
+            case .safetyOrange: return "Safety Orange"
+            case .blueprintBlue: return "Blueprint Blue"
+            case .emeraldGreen: return "Emerald Green"
+            case .goldenYellow: return "Golden Yellow"
+            case .sleekDark: return "Sleek Dark"
+            case .crispWhite: return "Crisp White"
+            }
+        }
+    }
     
     public var primaryColor: Color {
         switch self {
@@ -87,6 +131,19 @@ public enum WatermarkBadgeStyle: String, CaseIterable, Codable, Identifiable {
     case minimalTransparent = "Chữ bóng đổ (Không nền)"
     
     public var id: String { rawValue }
+    
+    public func localizedName(in language: AppLanguage) -> String {
+        switch language {
+        case .vietnamese: return rawValue
+        case .english:
+            switch self {
+            case .glassmorphism: return "Glassmorphism"
+            case .darkCard: return "Dark Card"
+            case .borderedStamp: return "Bordered Stamp"
+            case .minimalTransparent: return "Minimal Transparent"
+            }
+        }
+    }
 }
 
 // MARK: - Watermark Template Model

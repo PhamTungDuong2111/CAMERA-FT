@@ -6,6 +6,7 @@ public struct CameraView: View {
     @StateObject private var locationManager = LocationWeatherManager.shared
     @StateObject private var antiCounterfeitManager = AntiCounterfeitingManager.shared
     @StateObject private var photoLibraryManager = PhotoLibraryManager.shared
+    @ObservedObject var loc = LocalizationManager.shared
     
     @State private var currentMode: CameraMode = .photo
     @State private var selectedTemplate: WatermarkTemplate = WatermarkTemplate.presets[0]

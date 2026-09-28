@@ -6,13 +6,14 @@ public struct TemplateSelectorView: View {
     let onCustomize: (WatermarkTemplate) -> Void
     let onDismiss: () -> Void
     
+    @ObservedObject var loc = LocalizationManager.shared
     @State private var selectedCategory: WatermarkCategory? = nil
     
     public var body: some View {
         VStack(spacing: 12) {
             // Header
             HStack {
-                Text("Mẫu Watermark Thông Minh")
+                Text(loc.t("templateDrawerTitle"))
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -23,7 +24,7 @@ public struct TemplateSelectorView: View {
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "slider.horizontal.3")
-                        Text("Tùy biến")
+                        Text(loc.t("customize"))
                     }
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(Color.snapAccentOrange)
@@ -45,12 +46,12 @@ public struct TemplateSelectorView: View {
             // Category Filter Pills
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    categoryPill(title: "Tất cả", isSelected: selectedCategory == nil) {
+                    categoryPill(title: loc.t("all"), isSelected: selectedCategory == nil) {
                         selectedCategory = nil
                     }
                     
                     ForEach(WatermarkCategory.allCases) { cat in
-                        categoryPill(title: cat.rawValue, isSelected: selectedCategory == cat) {
+                        categoryPill(title: cat.localizedName(in: loc.currentLanguage), isSelected: selectedCategory == cat) {
                             selectedCategory = cat
                         }
                     }
@@ -120,20 +121,20 @@ public struct TemplateSelectorView: View {
                                 .lineLimit(1)
                         }
                         
-                        Text(template.category.rawValue)
+                        Text(template.category.localizedName(in: loc.currentLanguage))
                             .font(.system(size: 8.5, weight: .medium))
                             .foregroundColor(template.colorTheme.primaryColor)
                         
                         Divider().background(Color.white.opacity(0.2))
                         
-                        Text("• Thời gian thực (Giây)")
+                        Text("• " + loc.t("timeLabel"))
                             .font(.system(size: 8))
                             .foregroundColor(.white.opacity(0.75))
-                        Text("• GPS + Tọa độ + Cao độ")
+                        Text("• GPS + " + loc.t("coordinatesLabel"))
                             .font(.system(size: 8))
                             .foregroundColor(.white.opacity(0.75))
                         if template.showAntiCounterfeitQR {
-                            Text("• Mã QR chống giả")
+                            Text("• " + loc.t("scanQuery"))
                                 .font(.system(size: 8, weight: .bold))
                                 .foregroundColor(Color.snapNeonGreen)
                         }

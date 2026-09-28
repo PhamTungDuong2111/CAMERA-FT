@@ -58,6 +58,14 @@ Cung cấp sẵn hệ thống mẫu thiết kế chuyên dụng cho từng nghi�
 - Trình xem ảnh toàn màn hình với thanh thông tin metadata đầy đủ.
 - Tích hợp Share Sheet của iOS/macOS (AirDrop, Mail, Tin nhắn, Lưu vào Tệp...).
 
+### 6. Đa Ngôn Ngữ Song Ngữ (Tiếng Việt 🇻🇳 & English 🇺🇸)
+- **Chuyển đổi tức thì 1-chạm**: Nút chuyển đổi nhanh `🇻🇳 VI / 🇺🇸 EN` tích hợp ngay trên thanh công cụ camera và trong mục Cài đặt.
+- **Bản địa hóa toàn diện (Comprehensive Localization)**:
+  - Tất cả nhãn watermark (Thời gian, Dự án, Hạng mục, Đơn vị, Người thực hiện, Tọa độ, Cao độ, Hướng nhìn...).
+  - Mẫu danh mục (Công trình/Engineering, Chấm công/Attendance, Tuần tra/Patrol, Du lịch/Travel...).
+  - Chứng thư số đối soát chống giả mạo và toàn bộ thông báo hệ thống.
+  - Tự động áp dụng ngôn ngữ khi nung dấu (bake) trực tiếp lên ảnh và video.
+
 ---
 
 ## 📂 Cấu Trúc Dự Án

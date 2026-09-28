@@ -32,11 +32,13 @@ public class WatermarkRenderer {
             let baseWidth = min(imageSize.width, imageSize.height)
             let scaleFactor = (baseWidth / 1080.0) * CGFloat(template.scale)
             
+            let loc = LocalizationManager.shared
+            
             // Calculate Watermark content items
             var lines: [WatermarkLineItem] = []
             
             // Title Header
-            let title = template.titleText.isEmpty ? template.category.rawValue.uppercased() : template.titleText.uppercased()
+            let title = template.titleText.isEmpty ? template.category.localizedName(in: loc.currentLanguage).uppercased() : template.titleText.uppercased()
             
             // Time string
             if template.showTime {
@@ -46,34 +48,34 @@ public class WatermarkRenderer {
                 } else {
                     timeStr = DateFormatter.displayDateFormatter.string(from: timestamp) + " " + DateFormatter.displayTimeFormatter.string(from: timestamp).prefix(5)
                 }
-                lines.append(WatermarkLineItem(icon: "clock.fill", text: "Thời gian: " + timeStr, isHighlight: true))
+                lines.append(WatermarkLineItem(icon: "clock.fill", text: loc.t("timeLabel") + timeStr, isHighlight: true))
             }
             
             // Project & Task
             if !template.projectName.isEmpty {
-                lines.append(WatermarkLineItem(icon: "building.2.fill", text: "Dự án: " + template.projectName, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "building.2.fill", text: loc.t("projectLabel") + template.projectName, isHighlight: false))
             }
             if !template.workItem.isEmpty {
-                lines.append(WatermarkLineItem(icon: "hammer.fill", text: "Hạng mục: " + template.workItem, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "hammer.fill", text: loc.t("workItemLabel") + template.workItem, isHighlight: false))
             }
             if !template.contractorName.isEmpty {
-                lines.append(WatermarkLineItem(icon: "person.2.fill", text: "Đơn vị: " + template.contractorName, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "person.2.fill", text: loc.t("contractorLabel") + template.contractorName, isHighlight: false))
             }
             if !template.inspectorName.isEmpty {
-                lines.append(WatermarkLineItem(icon: "checkmark.seal.fill", text: "Người thực hiện: " + template.inspectorName, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "checkmark.seal.fill", text: loc.t("inspectorLabel") + template.inspectorName, isHighlight: false))
             }
             
             // Address & GPS
             if template.showLocation && !locationManager.fullAddress.isEmpty {
-                lines.append(WatermarkLineItem(icon: "mappin.and.ellipse", text: "Địa điểm: " + locationManager.fullAddress, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "mappin.and.ellipse", text: loc.t("locationLabel") + locationManager.fullAddress, isHighlight: false))
             }
             if template.showCoordinates {
                 let coordStr = locationManager.formattedCoordinates(latitude: locationManager.latitude, longitude: locationManager.longitude)
-                lines.append(WatermarkLineItem(icon: "location.north.circle.fill", text: "Tọa độ: " + coordStr, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "location.north.circle.fill", text: loc.t("coordinatesLabel") + coordStr, isHighlight: false))
             }
             if template.showAltitude {
                 let altStr = String(format: "%.1f m", locationManager.altitude)
-                lines.append(WatermarkLineItem(icon: "mountain.2.fill", text: "Cao độ: " + altStr, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "mountain.2.fill", text: loc.t("altitudeLabel") + altStr, isHighlight: false))
             }
             
             // Weather & Compass
@@ -82,7 +84,7 @@ public class WatermarkRenderer {
                 envParts.append("\(locationManager.weatherCondition) \(locationManager.temperatureCelsius)°C (Độ ẩm \(locationManager.humidityPercent)%)")
             }
             if template.showCompass {
-                envParts.append("Hướng: \(locationManager.compassDirection)")
+                envParts.append(loc.t("compassLabel") + "\(locationManager.compassDirection)")
             }
             if !envParts.isEmpty {
                 lines.append(WatermarkLineItem(icon: "thermometer.sun.fill", text: envParts.joined(separator: " • "), isHighlight: false))
@@ -90,12 +92,12 @@ public class WatermarkRenderer {
             
             // Notes
             if !template.customNotes.isEmpty {
-                lines.append(WatermarkLineItem(icon: "doc.text.fill", text: "Ghi chú: " + template.customNotes, isHighlight: false))
+                lines.append(WatermarkLineItem(icon: "doc.text.fill", text: loc.t("notesLabel") + template.customNotes, isHighlight: false))
             }
             
             // Anti-Counterfeiting verification code
             if template.showAntiCounterfeitQR, let record = verificationRecord {
-                lines.append(WatermarkLineItem(icon: "qrcode.viewfinder", text: "Mã xác thực: " + record.id, isHighlight: true))
+                lines.append(WatermarkLineItem(icon: "qrcode.viewfinder", text: loc.t("verifyCodeLabel") + record.id, isHighlight: true))
             }
             
             // 3. Layout calculation
@@ -210,7 +212,7 @@ public class WatermarkRenderer {
             )
             
             // Category tag on the right of header
-            let catText = "● " + template.category.rawValue
+            let catText = "● " + template.category.localizedName(in: loc.currentLanguage)
             let catAttrs: [NSAttributedString.Key: Any] = [
                 .font: fontHeader,
                 .foregroundColor: accentColor
@@ -277,8 +279,8 @@ public class WatermarkRenderer {
                     
                     qrImage.draw(in: qrRect)
                     
-                    // Small "SNAPLAB VERIFY" caption under QR
-                    let label = "QUÉT ĐỂ XÁC THỰC"
+                    // Small caption under QR
+                    let label = loc.t("scanToVerify")
                     let labelAttrs: [NSAttributedString.Key: Any] = [
                         .font: UIFont.systemFont(ofSize: 8.5 * scaleFactor, weight: .bold),
                         .foregroundColor: UIColor.white.withAlphaComponent(0.8)

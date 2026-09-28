@@ -2,50 +2,65 @@ import SwiftUI
 
 public struct SettingsView: View {
     @Environment(\.presentationMode) var presentationMode
+    @ObservedObject var loc = LocalizationManager.shared
     
-    @AppStorage("snaplab_format") private var imageFormat = "JPEG (Chất lượng cao)"
-    @AppStorage("snaplab_coord_format") private var coordFormat = "DMS (Độ Phút Giây)"
-    @AppStorage("snaplab_temp_unit") private var tempUnit = "Celsius (°C)"
+    @AppStorage("snaplab_format") private var imageFormat = "JPEG"
+    @AppStorage("snaplab_coord_format") private var coordFormat = "DMS"
+    @AppStorage("snaplab_temp_unit") private var tempUnit = "Celsius"
     @AppStorage("snaplab_auto_save_album") private var autoSaveAlbum = true
     @AppStorage("snaplab_sound_shutter") private var soundShutter = true
     
     public var body: some View {
         NavigationView {
             Form {
+                // Section 0: Language Switcher (Tiếng Việt <-> English)
+                Section(header: Text(loc.t("languageSection")).font(.system(size: 13, weight: .bold))) {
+                    Picker(loc.t("appLanguage"), selection: Binding(
+                        get: { loc.currentLanguage },
+                        set: { loc.setLanguage($0) }
+                    )) {
+                        ForEach(AppLanguage.allCases) { lang in
+                            Text(lang.displayName).tag(lang)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.vertical, 4)
+                }
+                
                 // Section 1: Capture Quality
-                Section(header: Text("Chất lượng ảnh & Định dạng").font(.system(size: 13, weight: .bold))) {
-                    Picker("Định dạng xuất ảnh", selection: $imageFormat) {
-                        Text("JPEG (95% Giữ nguyên chi tiết)").tag("JPEG (Chất lượng cao)")
-                        Text("HEIC (Tối ưu dung lượng Apple)").tag("HEIC")
+                Section(header: Text(loc.t("captureQualitySection")).font(.system(size: 13, weight: .bold))) {
+                    Picker(loc.t("exportFormat"), selection: $imageFormat) {
+                        Text(loc.t("jpegQuality")).tag("JPEG")
+                        Text(loc.t("heicQuality")).tag("HEIC")
                     }
                     
-                    Toggle("Tự động lưu vào Album 'SnapLab'", isOn: $autoSaveAlbum)
-                    Toggle("Âm thanh chụp ảnh", isOn: $soundShutter)
+                    Toggle(loc.t("autoSaveToAlbum"), isOn: $autoSaveAlbum)
+                    Toggle(loc.t("shutterSound"), isOn: $soundShutter)
                 }
                 
                 // Section 2: Watermark Units
-                Section(header: Text("Định dạng dữ liệu Watermark").font(.system(size: 13, weight: .bold))) {
-                    Picker("Hiển thị Tọa độ GPS", selection: $coordFormat) {
-                        Text("DMS (Ví dụ: 10°46'37\"N 106°41'55\"E)").tag("DMS (Độ Phút Giây)")
-                        Text("Thập phân (Ví dụ: 10.77694, 106.70093)").tag("Decimal")
+                Section(header: Text(loc.t("watermarkDataSection")).font(.system(size: 13, weight: .bold))) {
+                    Picker(loc.t("gpsCoordinateFormat"), selection: $coordFormat) {
+                        Text(loc.t("coordDms")).tag("DMS")
+                        Text(loc.t("coordDecimal")).tag("Decimal")
                     }
                     
-                    Picker("Đơn vị Nhiệt độ", selection: $tempUnit) {
-                        Text("Độ C (°C)").tag("Celsius (°C)")
-                        Text("Độ F (°F)").tag("Fahrenheit (°F)")
+                    Picker(loc.t("temperatureUnit"), selection: $tempUnit) {
+                        Text(loc.t("tempCelsius")).tag("Celsius")
+                        Text(loc.t("tempFahrenheit")).tag("Fahrenheit")
                     }
                 }
                 
                 // Section 3: Anti-Counterfeiting Security
-                Section(header: Text("Bảo mật chống làm giả (Anti-Counterfeiting)").font(.system(size: 13, weight: .bold))) {
+                Section(header: Text(loc.t("securitySectionTitle")).font(.system(size: 13, weight: .bold))) {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Image(systemName: "lock.shield.fill")
                                 .foregroundColor(Color.snapNeonGreen)
-                            Text("Chữ Ký Số SHA-256 & QR Code")
+                            Text(loc.t("securityTitle"))
                                 .font(.system(size: 14, weight: .bold))
                         }
-                        Text("Mỗi bức ảnh được chụp từ SnapLab được gắn mã băm cryptographic SHA-256 từ cảm biến camera gốc cùng tọa độ thời gian thực. Bất kỳ sự can thiệp nào bằng Photoshop hoặc phần mềm chỉnh sửa đều bị phát hiện ngay khi quét đối soát.")
+                        Text(loc.t("securityDetailedDesc"))
                             .font(.system(size: 12))
                             .foregroundColor(.secondary)
                     }
@@ -53,38 +68,38 @@ public struct SettingsView: View {
                 }
                 
                 // Section 4: About & Compatibility
-                Section(header: Text("Thông tin ứng dụng").font(.system(size: 13, weight: .bold))) {
+                Section(header: Text(loc.t("appInfoSection")).font(.system(size: 13, weight: .bold))) {
                     HStack {
-                        Text("Tên ứng dụng")
+                        Text(loc.t("appNameTitle"))
                         Spacer()
                         Text("SnapLab ‑ Camera & Filter")
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("Phiên bản")
+                        Text(loc.t("appVersionTitle"))
                         Spacer()
                         Text("2.4.0 (Build 6751682117)")
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("Nền tảng hỗ trợ")
+                        Text(loc.t("platformTitle"))
                         Spacer()
-                        Text("iOS 16+ & macOS Catalyst")
+                        Text(loc.t("platformDesc"))
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("Bản quyền")
+                        Text(loc.t("copyrightTitle"))
                         Spacer()
-                        Text("SnapLab Technologies")
+                        Text(loc.t("copyrightDesc"))
                             .foregroundColor(.secondary)
                     }
                 }
             }
-            .navigationTitle("Cài Đặt")
+            .navigationTitle(loc.t("settingsNavTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Xong") {
+                    Button(loc.t("done")) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .font(.system(size: 15, weight: .bold))

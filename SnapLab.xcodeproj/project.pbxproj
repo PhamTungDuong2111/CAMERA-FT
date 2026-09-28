@@ -31,6 +31,7 @@
 		AA0100162C90000100000001 /* AlbumWatermarkEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200162C90000100000001 /* AlbumWatermarkEditorView.swift */; };
 		AA0100172C90000100000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200172C90000100000001 /* SettingsView.swift */; };
 		AA0100182C90000100000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0200182C90000100000001 /* Assets.xcassets */; };
+		AA01001A2C90000100000001 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA02001A2C90000100000001 /* LocalizationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,7 @@
 		AA0200172C90000100000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA0200182C90000100000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0200192C90000100000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA02001A2C90000100000001 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +132,7 @@
 				AA0200082C90000100000001 /* WatermarkRenderer.swift */,
 				AA0200092C90000100000001 /* CameraManager.swift */,
 				AA02000A2C90000100000001 /* PhotoLibraryManager.swift */,
+				AA02001A2C90000100000001 /* LocalizationManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -293,6 +296,7 @@
 				AA0100152C90000100000001 /* MediaDetailView.swift in Sources */,
 				AA0100162C90000100000001 /* AlbumWatermarkEditorView.swift in Sources */,
 				AA0100172C90000100000001 /* SettingsView.swift in Sources */,
+				AA01001A2C90000100000001 /* LocalizationManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

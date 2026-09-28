@@ -7,6 +7,7 @@ public struct TemplateEditorSheet: View {
     
     @State private var workingCopy: WatermarkTemplate
     @StateObject private var locationManager = LocationWeatherManager.shared
+    @ObservedObject var loc = LocalizationManager.shared
     
     public init(template: Binding<WatermarkTemplate>, onSave: @escaping (WatermarkTemplate) -> Void, onDismiss: @escaping () -> Void) {
         self._template = template
@@ -19,7 +20,7 @@ public struct TemplateEditorSheet: View {
         NavigationView {
             Form {
                 // Section 1: Live Interactive Preview
-                Section(header: Text("Xem trước Watermark").font(.system(size: 13, weight: .bold))) {
+                Section(header: Text(loc.t("previewSection")).font(.system(size: 13, weight: .bold))) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(red: 0.14, green: 0.18, blue: 0.24))
@@ -38,49 +39,49 @@ public struct TemplateEditorSheet: View {
                 }
                 
                 // Section 2: Watermark Text Fields
-                Section(header: Text("Nội dung thông tin hiện trường").font(.system(size: 13, weight: .bold))) {
-                    TextField("Tiêu đề dấu (vd: TIÊU CHUẨN XÂY DỰNG)", text: $workingCopy.titleText)
-                    TextField("Tên dự án / Công trình", text: $workingCopy.projectName)
-                    TextField("Hạng mục công việc", text: $workingCopy.workItem)
-                    TextField("Đơn vị thi công / Nhà thầu", text: $workingCopy.contractorName)
-                    TextField("Người thực hiện / Giám sát", text: $workingCopy.inspectorName)
-                    TextField("Ghi chú bổ sung", text: $workingCopy.customNotes)
+                Section(header: Text(loc.t("infoFieldsSection")).font(.system(size: 13, weight: .bold))) {
+                    TextField(loc.t("titlePlaceholder"), text: $workingCopy.titleText)
+                    TextField(loc.t("projectPlaceholder"), text: $workingCopy.projectName)
+                    TextField(loc.t("itemPlaceholder"), text: $workingCopy.workItem)
+                    TextField(loc.t("contractorPlaceholder"), text: $workingCopy.contractorName)
+                    TextField(loc.t("inspectorPlaceholder"), text: $workingCopy.inspectorName)
+                    TextField(loc.t("notesPlaceholder"), text: $workingCopy.customNotes)
                 }
                 
                 // Section 3: Information Toggles
-                Section(header: Text("Trường dữ liệu tự động").font(.system(size: 13, weight: .bold))) {
-                    Toggle("Hiển thị ngày giờ thực", isOn: $workingCopy.showTime)
+                Section(header: Text(loc.t("autoFieldsSection")).font(.system(size: 13, weight: .bold))) {
+                    Toggle(loc.t("toggleTime"), isOn: $workingCopy.showTime)
                     if workingCopy.showTime {
-                        Toggle("Hiển thị đến từng giây", isOn: $workingCopy.showSeconds)
+                        Toggle(loc.t("toggleSeconds"), isOn: $workingCopy.showSeconds)
                     }
-                    Toggle("Hiển thị địa chỉ thực tế", isOn: $workingCopy.showLocation)
-                    Toggle("Hiển thị tọa độ GPS chính xác", isOn: $workingCopy.showCoordinates)
-                    Toggle("Hiển thị cao độ địa hình (Altitude)", isOn: $workingCopy.showAltitude)
-                    Toggle("Hiển thị thời tiết & nhiệt độ", isOn: $workingCopy.showWeather)
-                    Toggle("Hiển thị la bàn & hướng nhìn", isOn: $workingCopy.showCompass)
-                    Toggle("Hiển thị thông tin thiết bị", isOn: $workingCopy.showDeviceInfo)
-                    Toggle("Mã QR chống giả mạo (Anti-Counterfeit)", isOn: $workingCopy.showAntiCounterfeitQR)
+                    Toggle(loc.t("toggleLocation"), isOn: $workingCopy.showLocation)
+                    Toggle(loc.t("toggleCoords"), isOn: $workingCopy.showCoordinates)
+                    Toggle(loc.t("toggleAltitude"), isOn: $workingCopy.showAltitude)
+                    Toggle(loc.t("toggleWeather"), isOn: $workingCopy.showWeather)
+                    Toggle(loc.t("toggleCompass"), isOn: $workingCopy.showCompass)
+                    Toggle(loc.t("toggleDeviceInfo"), isOn: $workingCopy.showDeviceInfo)
+                    Toggle(loc.t("toggleAntiCounterfeit"), isOn: $workingCopy.showAntiCounterfeitQR)
                 }
                 
                 // Section 4: Style & Visuals
-                Section(header: Text("Giao diện & Vị trí").font(.system(size: 13, weight: .bold))) {
-                    Picker("Vị trí đặt dấu", selection: $workingCopy.position) {
+                Section(header: Text(loc.t("appearanceSection")).font(.system(size: 13, weight: .bold))) {
+                    Picker(loc.t("positionPicker"), selection: $workingCopy.position) {
                         ForEach(WatermarkPosition.allCases) { pos in
-                            Text(pos.rawValue).tag(pos)
+                            Text(pos.localizedName(in: loc.currentLanguage)).tag(pos)
                         }
                     }
                     
-                    Picker("Kiểu khung nền", selection: $workingCopy.badgeStyle) {
+                    Picker(loc.t("badgeStylePicker"), selection: $workingCopy.badgeStyle) {
                         ForEach(WatermarkBadgeStyle.allCases) { style in
-                            Text(style.rawValue).tag(style)
+                            Text(style.localizedName(in: loc.currentLanguage)).tag(style)
                         }
                     }
                     
-                    Picker("Tông màu chủ đạo", selection: $workingCopy.colorTheme) {
+                    Picker(loc.t("colorThemePicker"), selection: $workingCopy.colorTheme) {
                         ForEach(WatermarkColorTheme.allCases) { color in
                             HStack {
                                 Circle().fill(color.primaryColor).frame(width: 12, height: 12)
-                                Text(color.rawValue)
+                                Text(color.localizedName(in: loc.currentLanguage))
                             }
                             .tag(color)
                         }
@@ -88,7 +89,7 @@ public struct TemplateEditorSheet: View {
                     
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
-                            Text("Độ mờ (Opacity)")
+                            Text(loc.t("opacitySlider"))
                             Spacer()
                             Text("\(Int(workingCopy.opacity * 100))%")
                                 .foregroundColor(.secondary)
@@ -98,7 +99,7 @@ public struct TemplateEditorSheet: View {
                     
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
-                            Text("Kích thước (Scale)")
+                            Text(loc.t("scaleSlider"))
                             Spacer()
                             Text(String(format: "%.1fx", workingCopy.scale))
                                 .foregroundColor(.secondary)
@@ -107,14 +108,14 @@ public struct TemplateEditorSheet: View {
                     }
                 }
             }
-            .navigationTitle("Tùy Chỉnh Mẫu Dấu")
+            .navigationTitle(loc.t("customizerTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Hủy", action: onDismiss)
+                    Button(loc.t("cancel"), action: onDismiss)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Áp dụng") {
+                    Button(loc.t("apply")) {
                         onSave(workingCopy)
                         onDismiss()
                     }

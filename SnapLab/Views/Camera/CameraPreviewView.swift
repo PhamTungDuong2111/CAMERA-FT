@@ -83,7 +83,7 @@ public struct SyntheticCameraPreviewView: View {
                 // Synthetic Mode Indicator
                 VStack {
                     HStack {
-                        Label("CAMERA MÔ PHỎNG HD (macOS/Simulator)", systemImage: "sparkles.tv")
+                        Label(LocalizationManager.shared.t("simulatedCamera"), systemImage: "sparkles.tv")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 10)

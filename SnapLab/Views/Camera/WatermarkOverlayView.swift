@@ -3,6 +3,7 @@ import SwiftUI
 public struct WatermarkOverlayView: View {
     let template: WatermarkTemplate
     @ObservedObject var locationManager: LocationWeatherManager
+    @ObservedObject var loc = LocalizationManager.shared
     let verificationRecord: VerificationRecord?
     let onEditTapped: () -> Void
     
@@ -57,13 +58,13 @@ public struct WatermarkOverlayView: View {
                         .fill(template.colorTheme.primaryColor)
                         .frame(width: 4, height: 16)
                     
-                    Text(template.titleText.isEmpty ? template.category.rawValue.uppercased() : template.titleText.uppercased())
+                    Text(template.titleText.isEmpty ? template.category.localizedName(in: loc.currentLanguage).uppercased() : template.titleText.uppercased())
                         .font(.system(size: 14, weight: .heavy))
                         .foregroundColor(.white)
                     
                     Spacer(minLength: 6)
                     
-                    Text("● " + template.category.rawValue)
+                    Text("● " + template.category.localizedName(in: loc.currentLanguage))
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(template.colorTheme.primaryColor)
                 }
@@ -78,7 +79,7 @@ public struct WatermarkOverlayView: View {
                         Image(systemName: "clock.fill")
                             .font(.system(size: 11))
                             .foregroundColor(template.colorTheme.primaryColor)
-                        Text("Thời gian: " + (template.showSeconds ? DateFormatter.fullDateTimeFormatter.string(from: currentDate) : DateFormatter.displayDateFormatter.string(from: currentDate) + " " + String(DateFormatter.displayTimeFormatter.string(from: currentDate).prefix(5))))
+                        Text(loc.t("timeLabel") + (template.showSeconds ? DateFormatter.fullDateTimeFormatter.string(from: currentDate) : DateFormatter.displayDateFormatter.string(from: currentDate) + " " + String(DateFormatter.displayTimeFormatter.string(from: currentDate).prefix(5))))
                             .font(.system(size: 11.5, weight: .bold))
                             .foregroundColor(template.colorTheme.primaryColor)
                     }
@@ -86,28 +87,28 @@ public struct WatermarkOverlayView: View {
                 
                 // Project & Work Item
                 if !template.projectName.isEmpty {
-                    Label("Dự án: \(template.projectName)", systemImage: "building.2.fill")
+                    Label(loc.t("projectLabel") + template.projectName, systemImage: "building.2.fill")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white)
                         .lineLimit(1)
                 }
                 
                 if !template.workItem.isEmpty {
-                    Label("Hạng mục: \(template.workItem)", systemImage: "hammer.fill")
+                    Label(loc.t("workItemLabel") + template.workItem, systemImage: "hammer.fill")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white)
                         .lineLimit(1)
                 }
                 
                 if !template.contractorName.isEmpty {
-                    Label("Đơn vị: \(template.contractorName)", systemImage: "person.2.fill")
+                    Label(loc.t("contractorLabel") + template.contractorName, systemImage: "person.2.fill")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white)
                         .lineLimit(1)
                 }
                 
                 if !template.inspectorName.isEmpty {
-                    Label("Người chụp: \(template.inspectorName)", systemImage: "checkmark.seal.fill")
+                    Label(loc.t("inspectorLabel") + template.inspectorName, systemImage: "checkmark.seal.fill")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white)
                         .lineLimit(1)
@@ -115,7 +116,7 @@ public struct WatermarkOverlayView: View {
                 
                 // Address & Coordinates
                 if template.showLocation && !locationManager.fullAddress.isEmpty {
-                    Label("Địa điểm: \(locationManager.fullAddress)", systemImage: "mappin.and.ellipse")
+                    Label(loc.t("locationLabel") + locationManager.fullAddress, systemImage: "mappin.and.ellipse")
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundColor(.white.opacity(0.9))
                         .lineLimit(2)
@@ -123,13 +124,13 @@ public struct WatermarkOverlayView: View {
                 
                 if template.showCoordinates {
                     let coord = locationManager.formattedCoordinates(latitude: locationManager.latitude, longitude: locationManager.longitude)
-                    Label("Tọa độ: \(coord)", systemImage: "location.north.circle.fill")
+                    Label(loc.t("coordinatesLabel") + coord, systemImage: "location.north.circle.fill")
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundColor(.white.opacity(0.9))
                 }
                 
                 if template.showAltitude {
-                    Label("Cao độ: \(String(format: "%.1f m", locationManager.altitude))", systemImage: "mountain.2.fill")
+                    Label(loc.t("altitudeLabel") + String(format: "%.1f m", locationManager.altitude), systemImage: "mountain.2.fill")
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundColor(.white.opacity(0.85))
                 }
@@ -143,7 +144,7 @@ public struct WatermarkOverlayView: View {
                                 .foregroundColor(.white.opacity(0.9))
                         }
                         if template.showCompass {
-                            Label(locationManager.compassDirection, systemImage: "safari.fill")
+                            Label(loc.t("compassLabel") + locationManager.compassDirection, systemImage: "safari.fill")
                                 .font(.system(size: 10.5, weight: .medium))
                                 .foregroundColor(.white.opacity(0.9))
                         }
@@ -152,7 +153,7 @@ public struct WatermarkOverlayView: View {
                 
                 // Custom Notes
                 if !template.customNotes.isEmpty {
-                    Label("Ghi chú: \(template.customNotes)", systemImage: "doc.text.fill")
+                    Label(loc.t("notesLabel") + template.customNotes, systemImage: "doc.text.fill")
                         .font(.system(size: 10, weight: .regular))
                         .foregroundColor(.white.opacity(0.8))
                         .lineLimit(2)
@@ -164,7 +165,7 @@ public struct WatermarkOverlayView: View {
                         Image(systemName: "checkmark.shield.fill")
                             .font(.system(size: 10))
                             .foregroundColor(Color.snapNeonGreen)
-                        Text("Xác thực SnapLab: \(record.id)")
+                        Text(loc.t("snaplabVerified") + record.id)
                             .font(.system(size: 9.5, weight: .bold))
                             .foregroundColor(Color.snapNeonGreen)
                     }
@@ -187,7 +188,7 @@ public struct WatermarkOverlayView: View {
                             .cornerRadius(6)
                     }
                     
-                    Text("QUÉT ĐỐI SOÁT")
+                    Text(loc.t("scanQuery"))
                         .font(.system(size: 7.5, weight: .heavy))
                         .foregroundColor(.white.opacity(0.85))
                 }

@@ -3,6 +3,7 @@ import SwiftUI
 public struct MediaDetailView: View {
     let item: CapturedMedia
     @ObservedObject var libraryManager: PhotoLibraryManager
+    @ObservedObject var loc = LocalizationManager.shared
     @Environment(\.presentationMode) var presentationMode
     
     @State private var showingShareSheet = false
@@ -35,10 +36,10 @@ public struct MediaDetailView: View {
                     bottomInfoBar
                 }
             }
-            .navigationBarTitle(item.templateName.isEmpty ? "Chi Tiết Ảnh" : item.templateName, displayMode: .inline)
+            .navigationBarTitle(item.templateName.isEmpty ? "SnapLab Photo" : item.templateName, displayMode: .inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Đóng") {
+                    Button(loc.t("close")) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(.white)
@@ -84,13 +85,13 @@ public struct MediaDetailView: View {
             }
             .alert(isPresented: $showingDeleteAlert) {
                 Alert(
-                    title: Text("Xóa tệp tin này?"),
-                    message: Text("Ảnh và hồ sơ đóng dấu sẽ bị xóa vĩnh viễn khỏi thiết bị."),
-                    primaryButton: .destructive(Text("Xóa")) {
+                    title: Text(loc.t("deleteAlertTitle")),
+                    message: Text(loc.t("deleteAlertDesc")),
+                    primaryButton: .destructive(Text(loc.t("delete"))) {
                         libraryManager.deleteItem(item)
                         presentationMode.wrappedValue.dismiss()
                     },
-                    secondaryButton: .cancel(Text("Hủy"))
+                    secondaryButton: .cancel(Text(loc.t("cancel")))
                 )
             }
         }
@@ -104,18 +105,18 @@ public struct MediaDetailView: View {
                     .foregroundColor(.white)
                 Spacer()
                 if let record = item.verificationRecord {
-                    Text("ĐÃ XÁC THỰC: \(record.id)")
+                    Text(loc.t("snaplabVerified") + record.id)
                         .font(.system(size: 10.5, weight: .heavy))
                         .foregroundColor(Color.snapNeonGreen)
                 }
             }
             
             if let record = item.verificationRecord {
-                Text("Vị trí: \(record.addressString)")
+                Text(loc.t("locationLabel") + record.addressString)
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.8))
                     .lineLimit(1)
-                Text("Tọa độ GPS: \(String(format: "%.5f", record.latitude)), \(String(format: "%.5f", record.longitude)) • Cao độ: \(String(format: "%.1f", record.altitude))m")
+                Text(loc.t("coordinatesLabel") + String(format: "%.5f", record.latitude) + ", " + String(format: "%.5f", record.longitude) + " • " + loc.t("altitudeLabel") + String(format: "%.1f", record.altitude) + "m")
                     .font(.system(size: 10.5))
                     .foregroundColor(.white.opacity(0.65))
             }

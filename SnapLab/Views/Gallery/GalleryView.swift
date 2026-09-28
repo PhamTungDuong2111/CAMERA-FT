@@ -3,11 +3,11 @@ import SwiftUI
 public struct GalleryView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var libraryManager = PhotoLibraryManager.shared
+    @ObservedObject var loc = LocalizationManager.shared
     
     @State private var selectedFilter: MediaType? = nil
     @State private var selectedMedia: CapturedMedia?
     @State private var showingAlbumEditor = false
-    @State private var pickedSourceImage: UIImage?
     
     private let columns = [
         GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 10)
@@ -37,11 +37,11 @@ public struct GalleryView: View {
                 }
             }
             .background(Color.snapBackgroundDark.edgesIgnoringSafeArea(.all))
-            .navigationTitle("Thư Viện SnapLab")
+            .navigationTitle(loc.t("galleryTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Đóng") {
+                    Button(loc.t("close")) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(.white)
@@ -53,7 +53,7 @@ public struct GalleryView: View {
                     }) {
                         HStack(spacing: 5) {
                             Image(systemName: "plus.viewfinder")
-                            Text("Đóng dấu ảnh")
+                            Text(loc.t("stampExistingPhoto"))
                         }
                         .font(.system(size: 13, weight: .bold))
                         .foregroundColor(Color.snapAccentOrange)
@@ -72,17 +72,17 @@ public struct GalleryView: View {
     // MARK: - Filter Bar
     private var filterBar: some View {
         HStack(spacing: 12) {
-            filterButton(title: "Tất cả (\(libraryManager.mediaItems.count))", isSelected: selectedFilter == nil) {
+            filterButton(title: "\(loc.t("all")) (\(libraryManager.mediaItems.count))", isSelected: selectedFilter == nil) {
                 selectedFilter = nil
             }
             
             let photoCount = libraryManager.mediaItems.filter { $0.type == .photo }.count
-            filterButton(title: "Ảnh (\(photoCount))", isSelected: selectedFilter == .photo) {
+            filterButton(title: "\(loc.t("photo")) (\(photoCount))", isSelected: selectedFilter == .photo) {
                 selectedFilter = .photo
             }
             
             let videoCount = libraryManager.mediaItems.filter { $0.type == .video }.count
-            filterButton(title: "Video (\(videoCount))", isSelected: selectedFilter == .video) {
+            filterButton(title: "\(loc.t("video")) (\(videoCount))", isSelected: selectedFilter == .video) {
                 selectedFilter = .video
             }
             
@@ -110,11 +110,11 @@ public struct GalleryView: View {
                 .font(.system(size: 54))
                 .foregroundColor(.white.opacity(0.3))
             
-            Text("Chưa có ảnh hoặc video nào")
+            Text(loc.t("emptyGalleryTitle"))
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.white)
             
-            Text("Chụp ảnh hoặc quay video gắn watermark từ camera, hoặc chọn ảnh từ thư viện để đóng dấu.")
+            Text(loc.t("emptyGalleryDesc"))
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.6))
                 .multilineTextAlignment(.center)
@@ -123,7 +123,7 @@ public struct GalleryView: View {
             Button(action: {
                 showingAlbumEditor = true
             }) {
-                Text("Chọn ảnh từ Album để đóng dấu")
+                Text(loc.t("chooseFromAlbum"))
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)

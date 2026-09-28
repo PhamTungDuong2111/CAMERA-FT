@@ -1,12 +1,13 @@
 import SwiftUI
 
 public enum CameraMode: String, CaseIterable {
-    case photo = "ẢNH"
-    case video = "VIDEO"
+    case photo
+    case video
 }
 
 public struct CameraControlsView: View {
     @ObservedObject var cameraManager: CameraManager
+    @ObservedObject var loc = LocalizationManager.shared
     @Binding var currentMode: CameraMode
     let onCapturePhoto: () -> Void
     let onToggleVideo: () -> Void
@@ -28,7 +29,7 @@ public struct CameraControlsView: View {
             zoomPillView
                 .padding(.bottom, 6)
             
-            // Mode Switcher (ẢNH / VIDEO)
+            // Mode Switcher (ẢNH / PHOTO / VIDEO)
             modeSwitcherView
                 .padding(.bottom, 8)
             
@@ -41,7 +42,7 @@ public struct CameraControlsView: View {
     
     // MARK: - Top Controls Bar
     private var topBarView: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: 16) {
             // Flash Toggle
             Button(action: {
                 cameraManager.toggleFlash()
@@ -81,6 +82,23 @@ public struct CameraControlsView: View {
             
             Spacer()
             
+            // Quick Language Switcher Pill (VI <-> EN)
+            Button(action: {
+                let nextLang: AppLanguage = (loc.currentLanguage == .vietnamese) ? .english : .vietnamese
+                loc.setLanguage(nextLang)
+            }) {
+                HStack(spacing: 3) {
+                    Text(loc.currentLanguage == .vietnamese ? "🇻🇳 VI" : "🇺🇸 EN")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(Color.black.opacity(0.55))
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Color.white.opacity(0.25), lineWidth: 1))
+            }
+            
             // Anti-Counterfeiting Query Button
             Button(action: {
                 onOpenVerification()
@@ -88,7 +106,7 @@ public struct CameraControlsView: View {
                 HStack(spacing: 5) {
                     Image(systemName: "checkmark.shield.fill")
                         .font(.system(size: 13))
-                    Text("Đối soát")
+                    Text(loc.t("verify"))
                         .font(.system(size: 12, weight: .bold))
                 }
                 .foregroundColor(.white)
@@ -141,18 +159,21 @@ public struct CameraControlsView: View {
     // MARK: - Mode Switcher View
     private var modeSwitcherView: some View {
         HStack(spacing: 28) {
-            ForEach(CameraMode.allCases, id: \.self) { mode in
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        currentMode = mode
-                    }
-                }) {
-                    Text(mode.rawValue)
-                        .font(.system(size: 14, weight: currentMode == mode ? .heavy : .bold))
-                        .foregroundColor(currentMode == mode ? Color.snapGold : .white.opacity(0.6))
-                        .shadow(color: .black.opacity(0.8), radius: 2)
-                }
+            modeButton(mode: .photo, label: loc.t("photo"))
+            modeButton(mode: .video, label: loc.t("video"))
+        }
+    }
+    
+    private func modeButton(mode: CameraMode, label: String) -> some View {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                currentMode = mode
             }
+        }) {
+            Text(label)
+                .font(.system(size: 14, weight: currentMode == mode ? .heavy : .bold))
+                .foregroundColor(currentMode == mode ? Color.snapGold : .white.opacity(0.6))
+                .shadow(color: .black.opacity(0.8), radius: 2)
         }
     }
     
@@ -198,7 +219,7 @@ public struct CameraControlsView: View {
                         Image(systemName: "square.stack.3d.down.right.fill")
                             .font(.system(size: 20))
                             .foregroundColor(.white)
-                        Text("Mẫu dấu")
+                        Text(loc.t("templates"))
                             .font(.system(size: 9.5, weight: .bold))
                             .foregroundColor(.white)
                     }

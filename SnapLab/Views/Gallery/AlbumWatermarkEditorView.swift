@@ -5,6 +5,7 @@ public struct AlbumWatermarkEditorView: View {
     @ObservedObject var libraryManager = PhotoLibraryManager.shared
     @ObservedObject var locationManager = LocationWeatherManager.shared
     @ObservedObject var antiCounterfeitManager = AntiCounterfeitingManager.shared
+    @ObservedObject var loc = LocalizationManager.shared
     
     @State private var sourceImage: UIImage?
     @State private var showingImagePicker = false
@@ -51,11 +52,11 @@ public struct AlbumWatermarkEditorView: View {
                 }
             }
             .background(Color.snapBackgroundDark.edgesIgnoringSafeArea(.all))
-            .navigationTitle("Đóng Dấu Ảnh Có Sẵn")
+            .navigationTitle(loc.t("albumEditorTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Đóng") {
+                    Button(loc.t("close")) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(.white)
@@ -67,7 +68,7 @@ public struct AlbumWatermarkEditorView: View {
                             if isProcessing {
                                 ProgressView()
                             } else {
-                                Text("Lưu ảnh")
+                                Text(loc.t("savePhoto"))
                                     .font(.system(size: 15, weight: .bold))
                                     .foregroundColor(Color.snapAccentOrange)
                             }
@@ -98,11 +99,11 @@ public struct AlbumWatermarkEditorView: View {
                 .font(.system(size: 58))
                 .foregroundColor(Color.snapAccentOrange)
             
-            Text("Chọn một ảnh từ máy để đóng dấu")
+            Text(loc.t("albumPickerPromptTitle"))
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(.white)
             
-            Text("Hệ thống sẽ giữ nguyên độ phân giải gốc của ảnh, gắn watermark thông minh thời gian, GPS và mã QR chống giả.")
+            Text(loc.t("albumPickerPromptDesc"))
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.65))
                 .multilineTextAlignment(.center)
@@ -113,7 +114,7 @@ public struct AlbumWatermarkEditorView: View {
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "photo.fill")
-                    Text("Mở thư viện ảnh")
+                    Text(loc.t("openPhotoLibrary"))
                 }
                 .font(.system(size: 15, weight: .bold))
                 .foregroundColor(.black)
