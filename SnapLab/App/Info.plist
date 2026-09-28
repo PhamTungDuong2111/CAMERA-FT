@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>SnapLab</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>2.4.0</string>
+	<key>CFBundleVersion</key>
+	<string>6751682117</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>SnapLab cần quyền sử dụng Camera để chụp ảnh và quay video gắn watermark thời gian thực.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SnapLab cần quyền sử dụng Micro để ghi âm khi quay video watermark.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SnapLab cần quyền truy cập vị trí để tự động lấy địa chỉ, tọa độ GPS, cao độ và thời tiết chính xác cho watermark hiện trường.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>SnapLab cần vị trí để tự động điền tọa độ GPS cho watermark.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SnapLab cần quyền truy cập Thư viện ảnh để chọn ảnh cần đóng dấu watermark và xem thư viện.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SnapLab cần quyền lưu ảnh và video đã gắn watermark chất lượng cao vào album của bạn.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+	</dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+</dict>
+</plist>
