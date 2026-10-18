@@ -9,6 +9,9 @@ public struct SettingsView: View {
     @AppStorage("snaplab_temp_unit") private var tempUnit = "Celsius"
     @AppStorage("snaplab_auto_save_album") private var autoSaveAlbum = true
     @AppStorage("snaplab_sound_shutter") private var soundShutter = true
+    @AppStorage("snaplab_high_quality") private var highQuality = true
+    
+    public init() {}
     
     public var body: some View {
         NavigationView {
@@ -27,15 +30,16 @@ public struct SettingsView: View {
                     .padding(.vertical, 4)
                 }
                 
-                // Section 1: Capture Quality
-                Section(header: Text(loc.t("captureQualitySection")).font(.system(size: 13, weight: .bold))) {
+                // Section 1: Capture Quality & Camera
+                Section(header: Text(loc.t("cameraSection")).font(.system(size: 13, weight: .bold))) {
+                    Toggle(loc.t("saveToGallery"), isOn: $autoSaveAlbum)
+                    Toggle(loc.t("shutterSound"), isOn: $soundShutter)
+                    Toggle(loc.t("highQualityRender"), isOn: $highQuality)
+                    
                     Picker(loc.t("exportFormat"), selection: $imageFormat) {
                         Text(loc.t("jpegQuality")).tag("JPEG")
                         Text(loc.t("heicQuality")).tag("HEIC")
                     }
-                    
-                    Toggle(loc.t("autoSaveToAlbum"), isOn: $autoSaveAlbum)
-                    Toggle(loc.t("shutterSound"), isOn: $soundShutter)
                 }
                 
                 // Section 2: Watermark Units
@@ -52,17 +56,19 @@ public struct SettingsView: View {
                 }
                 
                 // Section 3: Anti-Counterfeiting Security
-                Section(header: Text(loc.t("securitySectionTitle")).font(.system(size: 13, weight: .bold))) {
+                Section(header: Text(loc.t("securitySection")).font(.system(size: 13, weight: .bold))) {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Image(systemName: "lock.shield.fill")
                                 .foregroundColor(Color.snapNeonGreen)
-                            Text(loc.t("securityTitle"))
+                            Text("SHA-256 Cryptographic Engine")
                                 .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.snapNeonGreen)
                         }
-                        Text(loc.t("securityDetailedDesc"))
+                        Text(loc.t("securityDesc"))
                             .font(.system(size: 12))
                             .foregroundColor(.secondary)
+                            .lineSpacing(2)
                     }
                     .padding(.vertical, 4)
                 }
@@ -72,13 +78,19 @@ public struct SettingsView: View {
                     HStack {
                         Text(loc.t("appNameTitle"))
                         Spacer()
-                        Text("SnapLab ‑ Camera & Filter")
+                        Text("SnapLab • Camera & Filter")
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text(loc.t("appVersionTitle"))
+                        Text(loc.t("version"))
                         Spacer()
-                        Text("2.4.0 (Build 6751682117)")
+                        Text("2.4.0")
+                            .foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Text(loc.t("build"))
+                        Spacer()
+                        Text("6751682117 (iOS/macOS Release)")
                             .foregroundColor(.secondary)
                     }
                     HStack {
@@ -95,7 +107,7 @@ public struct SettingsView: View {
                     }
                 }
             }
-            .navigationTitle(loc.t("settingsNavTitle"))
+            .navigationTitle(loc.t("settingsTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

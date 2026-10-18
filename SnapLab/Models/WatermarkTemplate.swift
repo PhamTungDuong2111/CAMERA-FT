@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 import CoreLocation
 
 // MARK: - Watermark Category
@@ -49,16 +49,6 @@ public enum WatermarkPosition: String, CaseIterable, Codable, Identifiable {
     
     public var id: String { rawValue }
     
-    public var alignment: Alignment {
-        switch self {
-        case .bottomLeft: return .bottomLeading
-        case .bottomRight: return .bottomTrailing
-        case .topLeft: return .topLeading
-        case .topRight: return .topTrailing
-        case .centerBottom: return .bottom
-        }
-    }
-    
     public func localizedName(in language: AppLanguage) -> String {
         switch language {
         case .vietnamese: return rawValue
@@ -74,61 +64,12 @@ public enum WatermarkPosition: String, CaseIterable, Codable, Identifiable {
     }
 }
 
-// MARK: - Watermark Theme Color
-public enum WatermarkColorTheme: String, CaseIterable, Codable, Identifiable {
-    case safetyOrange = "Cam công trình"
-    case blueprintBlue = "Xanh kỹ thuật"
-    case emeraldGreen = "Xanh lá an toàn"
-    case goldenYellow = "Vàng cảnh báo"
-    case sleekDark = "Đen mờ hiện đại"
-    case crispWhite = "Trắng tinh khiết"
-    
-    public var id: String { rawValue }
-    
-    public func localizedName(in language: AppLanguage) -> String {
-        switch language {
-        case .vietnamese: return rawValue
-        case .english:
-            switch self {
-            case .safetyOrange: return "Safety Orange"
-            case .blueprintBlue: return "Blueprint Blue"
-            case .emeraldGreen: return "Emerald Green"
-            case .goldenYellow: return "Golden Yellow"
-            case .sleekDark: return "Sleek Dark"
-            case .crispWhite: return "Crisp White"
-            }
-        }
-    }
-    
-    public var primaryColor: Color {
-        switch self {
-        case .safetyOrange: return Color(red: 1.0, green: 0.45, blue: 0.0)
-        case .blueprintBlue: return Color(red: 0.08, green: 0.48, blue: 0.98)
-        case .emeraldGreen: return Color(red: 0.12, green: 0.78, blue: 0.42)
-        case .goldenYellow: return Color(red: 1.0, green: 0.75, blue: 0.05)
-        case .sleekDark: return Color(red: 0.15, green: 0.15, blue: 0.18)
-        case .crispWhite: return Color.white
-        }
-    }
-    
-    public var accentUiColor: UIColor {
-        switch self {
-        case .safetyOrange: return UIColor(red: 1.0, green: 0.45, blue: 0.0, alpha: 1.0)
-        case .blueprintBlue: return UIColor(red: 0.08, green: 0.48, blue: 0.98, alpha: 1.0)
-        case .emeraldGreen: return UIColor(red: 0.12, green: 0.78, blue: 0.42, alpha: 1.0)
-        case .goldenYellow: return UIColor(red: 1.0, green: 0.75, blue: 0.05, alpha: 1.0)
-        case .sleekDark: return UIColor(red: 0.15, green: 0.15, blue: 0.18, alpha: 1.0)
-        case .crispWhite: return UIColor.white
-        }
-    }
-}
-
-// MARK: - Watermark Background Style
+// MARK: - Watermark Badge Style
 public enum WatermarkBadgeStyle: String, CaseIterable, Codable, Identifiable {
     case glassmorphism = "Kính mờ (Glass)"
-    case darkCard = "Hộp đen mờ"
-    case borderedStamp = "Viền tem công tác"
-    case minimalTransparent = "Chữ bóng đổ (Không nền)"
+    case darkCard = "Thẻ tối (Dark Card)"
+    case borderedStamp = "Viền tem (Stamp)"
+    case minimalTransparent = "Tối giản (Minimal)"
     
     public var id: String { rawValue }
     
@@ -146,6 +87,55 @@ public enum WatermarkBadgeStyle: String, CaseIterable, Codable, Identifiable {
     }
 }
 
+// MARK: - Watermark Color Theme
+public enum WatermarkColorTheme: String, CaseIterable, Codable, Identifiable {
+    case safetyOrange = "Cam công trình"
+    case goldenYellow = "Vàng kim"
+    case emeraldGreen = "Xanh lá ngọc"
+    case blueprintBlue = "Xanh bản vẽ"
+    case crimsonRed = "Đỏ cảnh báo"
+    case crispWhite = "Trắng tinh khôi"
+    
+    public var id: String { rawValue }
+    
+    public var primaryColor: Color {
+        switch self {
+        case .safetyOrange: return Color(red: 1.0, green: 0.42, blue: 0.0)
+        case .goldenYellow: return Color(red: 1.0, green: 0.78, blue: 0.12)
+        case .emeraldGreen: return Color(red: 0.15, green: 0.85, blue: 0.45)
+        case .blueprintBlue: return Color(red: 0.0, green: 0.65, blue: 1.0)
+        case .crimsonRed: return Color(red: 0.95, green: 0.25, blue: 0.25)
+        case .crispWhite: return Color.white
+        }
+    }
+    
+    public var uiColor: UIColor {
+        switch self {
+        case .safetyOrange: return UIColor(red: 1.0, green: 0.42, blue: 0.0, alpha: 1.0)
+        case .goldenYellow: return UIColor(red: 1.0, green: 0.78, blue: 0.12, alpha: 1.0)
+        case .emeraldGreen: return UIColor(red: 0.15, green: 0.85, blue: 0.45, alpha: 1.0)
+        case .blueprintBlue: return UIColor(red: 0.0, green: 0.65, blue: 1.0, alpha: 1.0)
+        case .crimsonRed: return UIColor(red: 0.95, green: 0.25, blue: 0.25, alpha: 1.0)
+        case .crispWhite: return UIColor.white
+        }
+    }
+    
+    public func localizedName(in language: AppLanguage) -> String {
+        switch language {
+        case .vietnamese: return rawValue
+        case .english:
+            switch self {
+            case .safetyOrange: return "Safety Orange"
+            case .goldenYellow: return "Golden Yellow"
+            case .emeraldGreen: return "Emerald Green"
+            case .blueprintBlue: return "Blueprint Blue"
+            case .crimsonRed: return "Crimson Red"
+            case .crispWhite: return "Crisp White"
+            }
+        }
+    }
+}
+
 // MARK: - Watermark Template Model
 public struct WatermarkTemplate: Identifiable, Codable, Equatable {
     public var id: String
@@ -155,7 +145,11 @@ public struct WatermarkTemplate: Identifiable, Codable, Equatable {
     public var colorTheme: WatermarkColorTheme
     public var position: WatermarkPosition
     
-    // Toggles
+    // Active Photo Filter & Sticker
+    public var activeFilter: PhotoFilter
+    public var activeSticker: PhotoSticker?
+    
+    // Field Toggles
     public var showTime: Bool
     public var showSeconds: Bool
     public var showLocation: Bool
@@ -166,7 +160,7 @@ public struct WatermarkTemplate: Identifiable, Codable, Equatable {
     public var showDeviceInfo: Bool
     public var showAntiCounterfeitQR: Bool
     
-    // Custom Fields
+    // Custom Text Fields
     public var titleText: String
     public var projectName: String
     public var workItem: String
@@ -185,6 +179,8 @@ public struct WatermarkTemplate: Identifiable, Codable, Equatable {
         badgeStyle: WatermarkBadgeStyle = .glassmorphism,
         colorTheme: WatermarkColorTheme = .safetyOrange,
         position: WatermarkPosition = .bottomLeft,
+        activeFilter: PhotoFilter = .original,
+        activeSticker: PhotoSticker? = nil,
         showTime: Bool = true,
         showSeconds: Bool = true,
         showLocation: Bool = true,
@@ -209,6 +205,8 @@ public struct WatermarkTemplate: Identifiable, Codable, Equatable {
         self.badgeStyle = badgeStyle
         self.colorTheme = colorTheme
         self.position = position
+        self.activeFilter = activeFilter
+        self.activeSticker = activeSticker
         self.showTime = showTime
         self.showSeconds = showSeconds
         self.showLocation = showLocation
@@ -232,7 +230,7 @@ public struct WatermarkTemplate: Identifiable, Codable, Equatable {
 // MARK: - Built-in Preset Templates
 public extension WatermarkTemplate {
     static let presets: [WatermarkTemplate] = [
-        // 1. Engineering / Construction
+        // 1. Engineering / Construction Standard
         WatermarkTemplate(
             id: "eng_construction_pro",
             name: "Công trình tiêu chuẩn",
@@ -240,6 +238,8 @@ public extension WatermarkTemplate {
             badgeStyle: .glassmorphism,
             colorTheme: .safetyOrange,
             position: .bottomLeft,
+            activeFilter: .original,
+            activeSticker: .passedQC,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -257,7 +257,7 @@ public extension WatermarkTemplate {
             customNotes: "Đạt chuẩn an toàn kỹ thuật thi công"
         ),
         
-        // 2. Construction Blue Stamp
+        // 2. Blueprint Stamp
         WatermarkTemplate(
             id: "eng_blueprint_stamp",
             name: "Tem giám sát kỹ thuật",
@@ -265,6 +265,8 @@ public extension WatermarkTemplate {
             badgeStyle: .borderedStamp,
             colorTheme: .blueprintBlue,
             position: .bottomLeft,
+            activeFilter: .cinematic,
+            activeSticker: .architectVerified,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -290,6 +292,8 @@ public extension WatermarkTemplate {
             badgeStyle: .darkCard,
             colorTheme: .emeraldGreen,
             position: .bottomLeft,
+            activeFilter: .original,
+            activeSticker: nil,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -315,6 +319,8 @@ public extension WatermarkTemplate {
             badgeStyle: .glassmorphism,
             colorTheme: .goldenYellow,
             position: .bottomLeft,
+            activeFilter: .warmSunlight,
+            activeSticker: .safetyFirst,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -332,7 +338,34 @@ public extension WatermarkTemplate {
             customNotes: "Áp suất bình chữa cháy bình thường"
         ),
         
-        // 5. Travel & Lifestyle Check-in
+        // 5. Defect Report
+        WatermarkTemplate(
+            id: "eng_defect_report",
+            name: "Báo cáo lỗi & Khuyết tật",
+            category: .engineering,
+            badgeStyle: .borderedStamp,
+            colorTheme: .crimsonRed,
+            position: .bottomLeft,
+            activeFilter: .original,
+            activeSticker: .urgentDefect,
+            showTime: true,
+            showSeconds: true,
+            showLocation: true,
+            showCoordinates: true,
+            showAltitude: true,
+            showWeather: true,
+            showCompass: true,
+            showDeviceInfo: true,
+            showAntiCounterfeitQR: true,
+            titleText: "BIÊN BẢN SỰ CỐ",
+            projectName: "Cao ốc Thương Mại Landmark",
+            workItem: "Kiểm định kết cấu vách thang máy",
+            contractorName: "Ban Thanh Tra Chất Lượng",
+            inspectorName: "Giám sát: Trần Đình Trọng",
+            customNotes: "Phát hiện vết rạn nứt bề mặt vữa ngoài"
+        ),
+        
+        // 6. Travel & Lifestyle
         WatermarkTemplate(
             id: "travel_lifestyle",
             name: "Check-in Du lịch",
@@ -340,6 +373,8 @@ public extension WatermarkTemplate {
             badgeStyle: .minimalTransparent,
             colorTheme: .crispWhite,
             position: .bottomRight,
+            activeFilter: .fleetingYears,
+            activeSticker: nil,
             showTime: true,
             showSeconds: false,
             showLocation: true,
@@ -357,7 +392,7 @@ public extension WatermarkTemplate {
             customNotes: "Thời tiết se lạnh 19°C tuyệt đẹp"
         ),
         
-        // 6. Minimal Clean
+        // 7. Minimal Clean
         WatermarkTemplate(
             id: "minimal_timestamp",
             name: "Tối giản thời gian & GPS",
@@ -365,6 +400,8 @@ public extension WatermarkTemplate {
             badgeStyle: .darkCard,
             colorTheme: .crispWhite,
             position: .bottomLeft,
+            activeFilter: .original,
+            activeSticker: nil,
             showTime: true,
             showSeconds: true,
             showLocation: true,

@@ -4,11 +4,31 @@ import CoreLocation
 // MARK: - Verification Status
 public enum VerificationStatus: String, Codable {
     case authentic = "ĐÃ XÁC THỰC CHÍNH CHỦ"
-    case tampered = "CẢNH BÁO: DỮ LIỆU BỊ SỬA ĐỔI"
-    case untrusted = "KHÔNG TÌM THẤY CHỮ KÝ GỐC"
+    case tampered = "CẢNH BÁO: DỮ LIỆU ĐÃ BỊ CHỈNH SỬA"
+    case untrusted = "KHÔNG TÌM THẤY BẢN GỐC"
+    
+    public var displayNameVi: String {
+        switch self {
+        case .authentic: return "ĐÃ XÁC THỰC CHÍNH CHỦ"
+        case .tampered: return "CẢNH BÁO: DỮ LIỆU ĐÃ BỊ CHỈNH SỬA"
+        case .untrusted: return "KHÔNG TÌM THẤY BẢN GỐC"
+        }
+    }
+    
+    public var displayNameEn: String {
+        switch self {
+        case .authentic: return "OFFICIALLY AUTHENTICATED"
+        case .tampered: return "WARNING: DATA HAS BEEN TAMPERED"
+        case .untrusted: return "ORIGINAL RECORD NOT FOUND"
+        }
+    }
     
     public var isSuccess: Bool {
         return self == .authentic
+    }
+    
+    public func getDisplayName(isVietnamese: Bool) -> String {
+        return isVietnamese ? displayNameVi : displayNameEn
     }
 }
 
@@ -21,9 +41,9 @@ public struct VerificationRecord: Identifiable, Codable, Equatable {
     public var longitude: Double
     public var altitude: Double
     public var addressString: String
-    public var deviceModel: String         // e.g. "iPhone 16 Pro" or "MacBook Pro (Apple Silicon)"
+    public var deviceModel: String         // e.g. "iPhone 16 Pro" or "MacBook Pro"
     public var systemVersion: String       // e.g. "iOS 18.0" / "macOS 15.0"
-    public var appVersion: String          // e.g. "SnapLab v2.4.0"
+    public var appVersion: String          // e.g. "SnapLab v2.4"
     public var projectName: String
     public var inspectorName: String
     public var sha256Checksum: String      // SHA-256 hash of original raw capture buffer
@@ -38,7 +58,7 @@ public struct VerificationRecord: Identifiable, Codable, Equatable {
         addressString: String = "",
         deviceModel: String = "Apple Device",
         systemVersion: String = "iOS 18.0",
-        appVersion: String = "SnapLab 1.0 (iOS/macOS)",
+        appVersion: String = "SnapLab v2.4 (iOS/macOS)",
         projectName: String = "",
         inspectorName: String = "",
         sha256Checksum: String = "",

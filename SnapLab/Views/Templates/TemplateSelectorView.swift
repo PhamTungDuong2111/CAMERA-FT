@@ -9,6 +9,18 @@ public struct TemplateSelectorView: View {
     @ObservedObject var loc = LocalizationManager.shared
     @State private var selectedCategory: WatermarkCategory? = nil
     
+    public init(
+        selectedTemplate: Binding<WatermarkTemplate>,
+        templates: Binding<[WatermarkTemplate]>,
+        onCustomize: @escaping (WatermarkTemplate) -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
+        self._selectedTemplate = selectedTemplate
+        self._templates = templates
+        self.onCustomize = onCustomize
+        self.onDismiss = onDismiss
+    }
+    
     public var body: some View {
         VStack(spacing: 12) {
             // Header

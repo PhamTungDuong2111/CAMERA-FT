@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 
 public struct WatermarkOverlayView: View {
     let template: WatermarkTemplate
@@ -12,35 +12,58 @@ public struct WatermarkOverlayView: View {
     let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
     
     public var body: some View {
-        VStack {
-            if template.position == .bottomLeft || template.position == .bottomRight || template.position == .centerBottom {
-                Spacer()
-            }
-            
-            HStack {
-                if template.position == .bottomRight || template.position == .topRight {
+        ZStack {
+            // 1. Watermark Card Positioned
+            VStack {
+                if template.position == .bottomLeft || template.position == .bottomRight || template.position == .centerBottom {
                     Spacer()
                 }
                 
-                // The Watermark Card
-                watermarkBadgeView
-                    .scaleEffect(CGFloat(template.scale))
-                    .opacity(template.opacity)
-                    .onTapGesture {
-                        onEditTapped()
+                HStack {
+                    if template.position == .bottomRight || template.position == .topRight {
+                        Spacer()
                     }
+                    
+                    // The Watermark Card
+                    watermarkBadgeView
+                        .scaleEffect(CGFloat(template.scale))
+                        .opacity(template.opacity)
+                        .onTapGesture {
+                            onEditTapped()
+                        }
+                    
+                    if template.position == .bottomLeft || template.position == .topLeft {
+                        Spacer()
+                    }
+                }
                 
-                if template.position == .bottomLeft || template.position == .topLeft {
+                if template.position == .topLeft || template.position == .topRight {
                     Spacer()
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 24)
             
-            if template.position == .topLeft || template.position == .topRight {
-                Spacer()
+            // 2. Active Sticker Badge (Corner Placement)
+            if let sticker = template.activeSticker {
+                VStack {
+                    HStack {
+                        if template.position == .topRight || template.position == .bottomRight {
+                            StickerBadgeView(sticker: sticker, size: 105)
+                                .padding(.leading, 20)
+                                .padding(.top, 76)
+                            Spacer()
+                        } else {
+                            Spacer()
+                            StickerBadgeView(sticker: sticker, size: 105)
+                                .padding(.trailing, 20)
+                                .padding(.top, 76)
+                        }
+                    }
+                    Spacer()
+                }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 24)
         .onReceive(timer) { input in
             currentDate = input
         }
@@ -52,7 +75,7 @@ public struct WatermarkOverlayView: View {
         HStack(alignment: .bottom, spacing: 14) {
             // Text Details Column
             VStack(alignment: .leading, spacing: 4) {
-                // Header Bar: Title and Category
+                // Header Bar: Accent Bar + Title and Category
                 HStack(spacing: 6) {
                     RoundedRectangle(cornerRadius: 2)
                         .fill(template.colorTheme.primaryColor)
@@ -79,7 +102,8 @@ public struct WatermarkOverlayView: View {
                         Image(systemName: "clock.fill")
                             .font(.system(size: 11))
                             .foregroundColor(template.colorTheme.primaryColor)
-                        Text(loc.t("timeLabel") + (template.showSeconds ? DateFormatter.fullDateTimeFormatter.string(from: currentDate) : DateFormatter.displayDateFormatter.string(from: currentDate) + " " + String(DateFormatter.displayTimeFormatter.string(from: currentDate).prefix(5))))
+                        let timeString = template.showSeconds ? DateFormatter.fullDateTimeFormatter.string(from: currentDate) : DateFormatter.displayDateFormatter.string(from: currentDate) + " " + String(DateFormatter.displayTimeFormatter.string(from: currentDate).prefix(5))
+                        Text(loc.t("timeLabel") + timeString)
                             .font(.system(size: 11.5, weight: .bold))
                             .foregroundColor(template.colorTheme.primaryColor)
                     }
@@ -123,10 +147,9 @@ public struct WatermarkOverlayView: View {
                 }
                 
                 if template.showCoordinates {
-                    let coord = locationManager.formattedCoordinates(latitude: locationManager.latitude, longitude: locationManager.longitude)
-                    Label(loc.t("coordinatesLabel") + coord, systemImage: "location.north.circle.fill")
+                    Label(loc.t("coordinatesLabel") + locationManager.formattedCoordinates, systemImage: "location.north.circle.fill")
                         .font(.system(size: 10.5, weight: .medium))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.white.opacity(0.85))
                 }
                 
                 if template.showAltitude {
@@ -135,109 +158,114 @@ public struct WatermarkOverlayView: View {
                         .foregroundColor(.white.opacity(0.85))
                 }
                 
-                // Weather & Compass
+                // Weather & Heading
                 if template.showWeather || template.showCompass {
                     HStack(spacing: 8) {
                         if template.showWeather {
-                            Label("\(locationManager.weatherCondition) \(locationManager.temperatureCelsius)°C", systemImage: locationManager.weatherIcon)
-                                .font(.system(size: 10.5, weight: .medium))
-                                .foregroundColor(.white.opacity(0.9))
+                            HStack(spacing: 3) {
+                                Image(systemName: "sun.max.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.yellow)
+                                Text("\(locationManager.weatherCondition) \(locationManager.temperatureCelsius)°C")
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
                         }
                         if template.showCompass {
-                            Label(loc.t("compassLabel") + locationManager.compassDirection, systemImage: "safari.fill")
-                                .font(.system(size: 10.5, weight: .medium))
-                                .foregroundColor(.white.opacity(0.9))
+                            HStack(spacing: 3) {
+                                Image(systemName: "safari.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(template.colorTheme.primaryColor)
+                                Text(locationManager.compassDirection)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
                         }
                     }
                 }
                 
-                // Custom Notes
+                // Notes
                 if !template.customNotes.isEmpty {
-                    Label(loc.t("notesLabel") + template.customNotes, systemImage: "doc.text.fill")
-                        .font(.system(size: 10, weight: .regular))
-                        .foregroundColor(.white.opacity(0.8))
+                    Label(loc.t("notesLabel") + template.customNotes, systemImage: "note.text")
+                        .font(.system(size: 10.5, weight: .medium))
+                        .foregroundColor(.white.opacity(0.9))
                         .lineLimit(2)
                 }
                 
-                // Verification Code ID
-                if template.showAntiCounterfeitQR, let record = verificationRecord {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.shield.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(Color.snapNeonGreen)
-                        Text(loc.t("snaplabVerified") + record.id)
-                            .font(.system(size: 9.5, weight: .bold))
-                            .foregroundColor(Color.snapNeonGreen)
-                    }
-                    .padding(.top, 1)
+                // Verification Record Code
+                if template.showAntiCounterfeitQR, let rec = verificationRecord {
+                    Text(loc.t("verifyCodeLabel") + rec.id)
+                        .font(.system(size: 9.5, weight: .bold, design: .monospaced))
+                        .foregroundColor(template.colorTheme.primaryColor)
+                        .padding(.top, 2)
                 }
             }
-            .frame(maxWidth: 290, alignment: .leading)
+            .frame(maxWidth: 270, alignment: .leading)
             
-            // Anti-Counterfeiting QR Code Column
-            if template.showAntiCounterfeitQR {
-                VStack(spacing: 3) {
-                    let dummyPayload = verificationRecord?.toQRCodePayload() ?? "snaplab://verify?id=DEMO"
-                    if let qrImage = ImageUtilities.generateQRCode(from: dummyPayload, size: CGSize(width: 68, height: 68)) {
-                        Image(uiImage: qrImage)
-                            .resizable()
-                            .interpolation(.none)
-                            .frame(width: 58, height: 58)
-                            .padding(3)
-                            .background(Color.white)
-                            .cornerRadius(6)
+            // Anti-Counterfeiting Dynamic QR Code Plate
+            if template.showAntiCounterfeitQR, let rec = verificationRecord {
+                VStack(spacing: 4) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.white)
+                            .frame(width: 80, height: 80)
+                        
+                        if let qr = ImageUtilities.generateQRCode(from: rec.toQRCodePayload(), size: CGSize(width: 74, height: 74)) {
+                            Image(uiImage: qr)
+                                .interpolation(.none)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 74, height: 74)
+                        }
                     }
                     
-                    Text(loc.t("scanQuery"))
-                        .font(.system(size: 7.5, weight: .heavy))
-                        .foregroundColor(.white.opacity(0.85))
+                    Text(loc.t("scanToVerify"))
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundColor(.white.opacity(0.8))
+                        .lineLimit(1)
                 }
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(
-            badgeBackground(for: template.badgeStyle)
-        )
-        .overlay(
-            badgeBorder(for: template.badgeStyle)
-        )
+        .background(badgeBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(badgeBorder)
+        .shadow(color: Color.black.opacity(0.45), radius: 8, x: 0, y: 4)
     }
     
-    // MARK: - Badge Background
+    // MARK: - Badge Background Styling
     @ViewBuilder
-    private func badgeBackground(for style: WatermarkBadgeStyle) -> some View {
-        switch style {
+    private var badgeBackground: some View {
+        switch template.badgeStyle {
         case .glassmorphism:
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.black.opacity(0.68))
+            Color(red: 0.06, green: 0.07, blue: 0.09)
+                .opacity(0.82)
                 .background(.ultraThinMaterial)
-                .cornerRadius(14)
         case .darkCard:
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(red: 0.10, green: 0.11, blue: 0.13).opacity(0.88))
+            Color(red: 0.10, green: 0.11, blue: 0.14)
+                .opacity(0.95)
         case .borderedStamp:
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black.opacity(0.65))
+            Color(red: 0.05, green: 0.05, blue: 0.06)
+                .opacity(0.92)
         case .minimalTransparent:
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.black.opacity(0.35))
+            Color.black.opacity(0.40)
         }
     }
     
-    // MARK: - Badge Border
+    // MARK: - Badge Border Styling
     @ViewBuilder
-    private func badgeBorder(for style: WatermarkBadgeStyle) -> some View {
-        switch style {
+    private var badgeBorder: some View {
+        switch template.badgeStyle {
         case .glassmorphism:
             RoundedRectangle(cornerRadius: 14)
-                .stroke(template.colorTheme.primaryColor.opacity(0.55), lineWidth: 1.5)
+                .stroke(template.colorTheme.primaryColor.opacity(0.65), lineWidth: 1.5)
         case .darkCard:
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                .stroke(Color.white.opacity(0.25), lineWidth: 1.0)
         case .borderedStamp:
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(template.colorTheme.primaryColor, lineWidth: 2)
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(template.colorTheme.primaryColor, lineWidth: 2.5)
         case .minimalTransparent:
             EmptyView()
         }

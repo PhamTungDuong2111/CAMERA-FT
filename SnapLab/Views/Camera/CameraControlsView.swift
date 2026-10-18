@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 
 public enum CameraMode: String, CaseIterable {
     case photo
@@ -9,6 +9,9 @@ public struct CameraControlsView: View {
     @ObservedObject var cameraManager: CameraManager
     @ObservedObject var loc = LocalizationManager.shared
     @Binding var currentMode: CameraMode
+    @Binding var activeFilter: PhotoFilter
+    @Binding var activeSticker: PhotoSticker?
+    
     let onCapturePhoto: () -> Void
     let onToggleVideo: () -> Void
     let onOpenGallery: () -> Void
@@ -16,281 +19,351 @@ public struct CameraControlsView: View {
     let onOpenVerification: () -> Void
     let onOpenSettings: () -> Void
     
+    @State private var showingFilterSelector = false
+    @State private var showingStickerSelector = false
+    
     public var body: some View {
-        VStack(spacing: 12) {
-            // Top Controls Bar
+        VStack(spacing: 8) {
+            // 1. Top Controls Bar
             topBarView
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
             
             Spacer()
             
-            // Zoom Selector Pill
+            // 2. Filter Selector Row (Collapsible)
+            if showingFilterSelector {
+                filterSelectorRow
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            
+            // 3. Sticker Selector Row (Collapsible)
+            if showingStickerSelector {
+                stickerSelectorRow
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            
+            // 4. Zoom Selector Pill (.5x, 1x, 2x, 5x)
             zoomPillView
+                .padding(.bottom, 4)
+            
+            // 5. Mode Switcher (ẢNH / VIDEO)
+            modeSwitcherView
                 .padding(.bottom, 6)
             
-            // Mode Switcher (ẢNH / PHOTO / VIDEO)
-            modeSwitcherView
-                .padding(.bottom, 8)
-            
-            // Bottom Action Deck (Gallery Thumb, Shutter, Flip Camera, Templates)
+            // 6. Bottom Action Deck
             bottomDeckView
-                .padding(.horizontal, 24)
-                .padding(.bottom, 28)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 22)
         }
     }
     
     // MARK: - Top Controls Bar
     private var topBarView: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             // Flash Toggle
-            Button(action: {
-                cameraManager.toggleFlash()
-            }) {
+            Button(action: { cameraManager.toggleFlash() }) {
                 Image(systemName: cameraManager.flashMode.iconName)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(cameraManager.flashMode == .off ? .white : Color.snapGold)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 38, height: 38)
                     .background(Color.black.opacity(0.45))
                     .clipShape(Circle())
             }
             
-            // Aspect Ratio Toggle
-            Button(action: {
-                cycleAspectRatio()
-            }) {
+            // Aspect Ratio Toggle (4:3 / 16:9)
+            Button(action: { cycleAspectRatio() }) {
                 Text(cameraManager.aspectRatio.rawValue)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.white)
-                    .frame(width: 40, height: 40)
+                    .padding(.horizontal, 10)
+                    .frame(height: 32)
+                    .background(Color.black.opacity(0.45))
+                    .clipShape(Capsule())
+            }
+            
+            // Grid Toggle
+            Button(action: { cameraManager.toggleGrid() }) {
+                Image(systemName: cameraManager.showGrid ? "grid" : "grid.circle")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(cameraManager.showGrid ? Color.snapGold : .white.opacity(0.55))
+                    .frame(width: 38, height: 38)
                     .background(Color.black.opacity(0.45))
                     .clipShape(Circle())
             }
             
-            // Grid & Spirit Level
+            // Filter Drawer Toggle (Magic Wand)
             Button(action: {
-                cameraManager.showGrid.toggle()
-                cameraManager.showSpiritLevel.toggle()
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    showingFilterSelector.toggle()
+                    if showingFilterSelector { showingStickerSelector = false }
+                }
             }) {
-                Image(systemName: cameraManager.showGrid ? "grid" : "circle.grid.2x2")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(cameraManager.showGrid ? Color.snapCyberCyan : .white.opacity(0.7))
-                    .frame(width: 40, height: 40)
+                Image(systemName: "wand.and.stars")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(showingFilterSelector || activeFilter != .original ? Color.snapGold : .white)
+                    .frame(width: 38, height: 38)
+                    .background(Color.black.opacity(0.45))
+                    .clipShape(Circle())
+            }
+            
+            // Sticker Drawer Toggle (Star)
+            Button(action: {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    showingStickerSelector.toggle()
+                    if showingStickerSelector { showingFilterSelector = false }
+                }
+            }) {
+                Image(systemName: "seal.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(showingStickerSelector || activeSticker != nil ? Color.snapNeonGreen : .white)
+                    .frame(width: 38, height: 38)
                     .background(Color.black.opacity(0.45))
                     .clipShape(Circle())
             }
             
             Spacer()
             
-            // Quick Language Switcher Pill (VI <-> EN)
-            Button(action: {
-                let nextLang: AppLanguage = (loc.currentLanguage == .vietnamese) ? .english : .vietnamese
-                loc.setLanguage(nextLang)
-            }) {
-                HStack(spacing: 3) {
-                    Text(loc.currentLanguage == .vietnamese ? "🇻🇳 VI" : "🇺🇸 EN")
+            // Language Toggle (VI / EN)
+            Button(action: { loc.toggleLanguage() }) {
+                HStack(spacing: 4) {
+                    Text(loc.isVietnamese() ? "🇻🇳 VI" : "🇺🇸 EN")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.white)
                 }
                 .padding(.horizontal, 10)
-                .padding(.vertical, 7)
-                .background(Color.black.opacity(0.55))
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.white.opacity(0.25), lineWidth: 1))
-            }
-            
-            // Anti-Counterfeiting Query Button
-            Button(action: {
-                onOpenVerification()
-            }) {
-                HStack(spacing: 5) {
-                    Image(systemName: "checkmark.shield.fill")
-                        .font(.system(size: 13))
-                    Text(loc.t("verify"))
-                        .font(.system(size: 12, weight: .bold))
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.snapNeonGreen.opacity(0.85))
+                .frame(height: 32)
+                .background(Color.black.opacity(0.45))
                 .clipShape(Capsule())
             }
             
             // Settings Button
-            Button(action: {
-                onOpenSettings()
-            }) {
+            Button(action: onOpenSettings) {
                 Image(systemName: "gearshape.fill")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 38, height: 38)
                     .background(Color.black.opacity(0.45))
                     .clipShape(Circle())
             }
         }
     }
     
-    // MARK: - Zoom Pill View
-    private var zoomPillView: some View {
-        HStack(spacing: 12) {
-            zoomButton(label: "0.5x", factor: 0.5)
-            zoomButton(label: "1x", factor: 1.0)
-            zoomButton(label: "2x", factor: 2.0)
-            zoomButton(label: "5x", factor: 5.0)
+    // MARK: - Filter Selector Carousel
+    private var filterSelectorRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(PhotoFilter.allCases) { filter in
+                    let isSelected = activeFilter == filter
+                    Button(action: {
+                        activeFilter = filter
+                    }) {
+                        Text(filter.displayName(isVi: loc.isVietnamese()))
+                            .font(.system(size: 11, weight: isSelected ? .bold : .medium))
+                            .foregroundColor(isSelected ? .black : .white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(isSelected ? Color.snapGold : Color.black.opacity(0.65))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .stroke(isSelected ? Color.white : Color.white.opacity(0.2), lineWidth: 1)
+                            )
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
+    }
+    
+    // MARK: - Sticker Selector Carousel
+    private var stickerSelectorRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                // "None" option
+                let isNone = activeSticker == nil
+                Button(action: { activeSticker = nil }) {
+                    Text(loc.t("noSticker"))
+                        .font(.system(size: 11, weight: isNone ? .bold : .medium))
+                        .foregroundColor(isNone ? .black : .white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(isNone ? Color.snapNeonGreen : Color.black.opacity(0.65))
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule().stroke(isNone ? Color.white : Color.white.opacity(0.2), lineWidth: 1)
+                        )
+                }
+                
+                ForEach(PhotoSticker.allCases) { sticker in
+                    let isSelected = activeSticker == sticker
+                    Button(action: { activeSticker = sticker }) {
+                        Text(sticker.displayName(isVi: loc.isVietnamese()))
+                            .font(.system(size: 11, weight: isSelected ? .bold : .medium))
+                            .foregroundColor(isSelected ? .black : .white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(isSelected ? sticker.badgeColor : Color.black.opacity(0.65))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(isSelected ? Color.white : Color.white.opacity(0.2), lineWidth: 1)
+                            )
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+        }
+    }
+    
+    // MARK: - Zoom Selector Pill
+    private var zoomPillView: some View {
+        HStack(spacing: 4) {
+            zoomButton(factor: 0.5, label: ".5")
+            zoomButton(factor: 1.0, label: "1x")
+            zoomButton(factor: 2.0, label: "2x")
+            zoomButton(factor: 5.0, label: "5x")
+        }
+        .padding(3)
         .background(Color.black.opacity(0.45))
         .clipShape(Capsule())
     }
     
-    private func zoomButton(label: String, factor: CGFloat) -> some View {
-        let isSelected = abs(cameraManager.zoomFactor - factor) < 0.2
+    private func zoomButton(factor: CGFloat, label: String) -> some View {
+        let isSelected = abs(cameraManager.zoomFactor - factor) < 0.25
         return Button(action: {
-            cameraManager.setZoom(factor: factor)
+            cameraManager.setZoom(factor)
         }) {
             Text(label)
-                .font(.system(size: 12, weight: isSelected ? .heavy : .medium))
-                .foregroundColor(isSelected ? Color.snapGold : .white.opacity(0.8))
-                .frame(width: 32, height: 24)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(isSelected ? .black : .white)
+                .frame(width: 38, height: 30)
+                .background(isSelected ? Color.snapGold : Color.clear)
+                .clipShape(Circle())
         }
     }
     
-    // MARK: - Mode Switcher View
+    // MARK: - Camera Mode Switcher (ẢNH / VIDEO)
     private var modeSwitcherView: some View {
-        HStack(spacing: 28) {
-            modeButton(mode: .photo, label: loc.t("photo"))
-            modeButton(mode: .video, label: loc.t("video"))
+        HStack(spacing: 24) {
+            Button(action: { currentMode = .photo }) {
+                Text(loc.t("photo"))
+                    .font(.system(size: 14, weight: currentMode == .photo ? .bold : .medium))
+                    .foregroundColor(currentMode == .photo ? Color.snapGold : .white.opacity(0.6))
+            }
+            
+            Button(action: { currentMode = .video }) {
+                Text(loc.t("video"))
+                    .font(.system(size: 14, weight: currentMode == .video ? .bold : .medium))
+                    .foregroundColor(currentMode == .video ? Color.snapGold : .white.opacity(0.6))
+            }
         }
     }
     
-    private func modeButton(mode: CameraMode, label: String) -> some View {
+    // MARK: - Bottom Action Deck
+    private var bottomDeckView: some View {
+        HStack(spacing: 0) {
+            // 1. Gallery Button
+            bottomIconButton(
+                title: loc.t("gallery"),
+                systemImage: "photo.on.rectangle.angled",
+                action: onOpenGallery
+            )
+            .frame(maxWidth: .infinity)
+            
+            // 2. Templates Button
+            bottomIconButton(
+                title: loc.t("templates"),
+                systemImage: "square.3.layers.3d.down.right.fill",
+                action: onOpenTemplates
+            )
+            .frame(maxWidth: .infinity)
+            
+            // 3. Shutter Capture Button
+            shutterButton
+                .frame(maxWidth: .infinity)
+            
+            // 4. Verify Query Button
+            bottomIconButton(
+                title: loc.t("verify"),
+                systemImage: "checkmark.shield.fill",
+                tint: Color.snapNeonGreen,
+                action: onOpenVerification
+            )
+            .frame(maxWidth: .infinity)
+            
+            // 5. Flip Camera Button
+            bottomIconButton(
+                title: loc.t("flip"),
+                systemImage: "camera.rotate.fill",
+                action: { cameraManager.toggleCameraFacing() }
+            )
+            .frame(maxWidth: .infinity)
+        }
+    }
+    
+    // MARK: - Shutter Button with Mode morphing
+    private var shutterButton: some View {
         Button(action: {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                currentMode = mode
+            if currentMode == .photo {
+                onCapturePhoto()
+            } else {
+                onToggleVideo()
             }
         }) {
-            Text(label)
-                .font(.system(size: 14, weight: currentMode == mode ? .heavy : .bold))
-                .foregroundColor(currentMode == mode ? Color.snapGold : .white.opacity(0.6))
-                .shadow(color: .black.opacity(0.8), radius: 2)
-        }
-    }
-    
-    // MARK: - Bottom Deck View
-    private var bottomDeckView: some View {
-        HStack {
-            // Gallery Thumbnail
-            Button(action: {
-                onOpenGallery()
-            }) {
-                ZStack {
-                    if let thumb = cameraManager.lastCapturedThumbnail {
-                        Image(uiImage: thumb)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 52, height: 52)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white, lineWidth: 2))
-                    } else {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white.opacity(0.2))
-                            .frame(width: 52, height: 52)
-                            .overlay(Image(systemName: "photo.on.rectangle").foregroundColor(.white))
-                    }
-                }
-            }
-            .frame(width: 60)
-            
-            Spacer()
-            
-            // Shutter Button
-            shutterButton
-            
-            Spacer()
-            
-            // Right Controls: Template Selector & Flip Camera
-            HStack(spacing: 16) {
-                // Template Drawer
-                Button(action: {
-                    onOpenTemplates()
-                }) {
-                    VStack(spacing: 2) {
-                        Image(systemName: "square.stack.3d.down.right.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                        Text(loc.t("templates"))
-                            .font(.system(size: 9.5, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    .frame(width: 50, height: 50)
-                    .background(Color.snapAccentOrange.opacity(0.85))
-                    .clipShape(Circle())
-                }
+            ZStack {
+                Circle()
+                    .stroke(Color.white, lineWidth: 3.5)
+                    .frame(width: 76, height: 76)
                 
-                // Flip Camera
-                Button(action: {
-                    cameraManager.flipCamera()
-                }) {
-                    Image(systemName: "camera.rotate.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(.white)
-                        .frame(width: 48, height: 48)
-                        .background(Color.black.opacity(0.45))
-                        .clipShape(Circle())
-                }
-            }
-        }
-    }
-    
-    // MARK: - Shutter Button
-    @ViewBuilder
-    private var shutterButton: some View {
-        if currentMode == .photo {
-            // Photo Shutter
-            Button(action: {
-                onCapturePhoto()
-            }) {
-                ZStack {
-                    Circle()
-                        .stroke(Color.white, lineWidth: 4.5)
-                        .frame(width: 76, height: 76)
-                    
+                if currentMode == .photo {
                     Circle()
                         .fill(Color.white)
-                        .frame(width: 62, height: 62)
-                }
-            }
-        } else {
-            // Video Shutter
-            Button(action: {
-                onToggleVideo()
-            }) {
-                ZStack {
-                    Circle()
-                        .stroke(cameraManager.isRecordingVideo ? Color.snapDangerRed : Color.white, lineWidth: 4.5)
-                        .frame(width: 76, height: 76)
-                    
+                        .frame(width: 64, height: 64)
+                } else {
+                    // Video recording state: circle vs rounded square
                     if cameraManager.isRecordingVideo {
                         RoundedRectangle(cornerRadius: 6)
                             .fill(Color.snapDangerRed)
-                            .frame(width: 30, height: 30)
+                            .frame(width: 28, height: 28)
                     } else {
                         Circle()
                             .fill(Color.snapDangerRed)
-                            .frame(width: 62, height: 62)
+                            .frame(width: 58, height: 58)
                     }
                 }
+            }
+        }
+    }
+    
+    private func bottomIconButton(
+        title: String,
+        systemImage: String,
+        tint: Color = .white,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.12))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: systemImage)
+                        .font(.system(size: 20))
+                        .foregroundColor(tint)
+                }
+                
+                Text(title)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+                    .lineLimit(1)
             }
         }
     }
     
     private func cycleAspectRatio() {
-        switch cameraManager.aspectRatio {
-        case .ratio4_3: cameraManager.aspectRatio = .ratio16_9
-        case .ratio16_9: cameraManager.aspectRatio = .ratio1_1
-        case .ratio1_1: cameraManager.aspectRatio = .full
-        case .full: cameraManager.aspectRatio = .ratio4_3
-        }
+        cameraManager.aspectRatio = cameraManager.aspectRatio == .ratio4x3 ? .ratio16x9 : .ratio4x3
     }
 }

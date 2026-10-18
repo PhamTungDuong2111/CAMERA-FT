@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000022C10000100000002 /* PhotoFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000012C10000100000001 /* PhotoFilter.swift */; };
+		A10000042C10000100000004 /* PhotoSticker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000032C10000100000003 /* PhotoSticker.swift */; };
 		AA0100012C90000100000001 /* SnapLabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200012C90000100000001 /* SnapLabApp.swift */; };
 		AA0100022C90000100000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200022C90000100000001 /* ContentView.swift */; };
 		AA0100032C90000100000001 /* WatermarkTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200032C90000100000001 /* WatermarkTemplate.swift */; };
@@ -35,6 +37,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A10000012C10000100000001 /* PhotoFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoFilter.swift; sourceTree = "<group>"; };
+		A10000032C10000100000003 /* PhotoSticker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSticker.swift; sourceTree = "<group>"; };
 		AA0000012C90000100000001 /* SnapLab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SnapLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0200012C90000100000001 /* SnapLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapLabApp.swift; sourceTree = "<group>"; };
 		AA0200022C90000100000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -117,6 +121,8 @@
 		AA0000072C90000100000001 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A10000012C10000100000001 /* PhotoFilter.swift */,
+				A10000032C10000100000003 /* PhotoSticker.swift */,
 				AA0200032C90000100000001 /* WatermarkTemplate.swift */,
 				AA0200042C90000100000001 /* VerificationRecord.swift */,
 				AA0200052C90000100000001 /* CapturedMedia.swift */,
@@ -273,6 +279,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000022C10000100000002 /* PhotoFilter.swift in Sources */,
+				A10000042C10000100000004 /* PhotoSticker.swift in Sources */,
 				AA0100012C90000100000001 /* SnapLabApp.swift in Sources */,
 				AA0100022C90000100000001 /* ContentView.swift in Sources */,
 				AA0100032C90000100000001 /* WatermarkTemplate.swift in Sources */,

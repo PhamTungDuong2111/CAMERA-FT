@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 import Combine
 
 public enum AppLanguage: String, CaseIterable, Identifiable, Codable {
@@ -31,7 +31,6 @@ public class LocalizationManager: ObservableObject {
            let lang = AppLanguage(rawValue: saved) {
             self.currentLanguage = lang
         } else {
-            // Default to system language or Vietnamese
             let preferred = Locale.preferredLanguages.first ?? "vi"
             if preferred.hasPrefix("en") {
                 self.currentLanguage = .english
@@ -41,10 +40,18 @@ public class LocalizationManager: ObservableObject {
         }
     }
     
+    public func isVietnamese() -> Bool {
+        return currentLanguage == .vietnamese
+    }
+    
     public func setLanguage(_ language: AppLanguage) {
         withAnimation(.easeInOut(duration: 0.25)) {
             self.currentLanguage = language
         }
+    }
+    
+    public func toggleLanguage() {
+        setLanguage(currentLanguage == .vietnamese ? .english : .vietnamese)
     }
     
     // MARK: - Localized String Lookup
@@ -63,6 +70,8 @@ public class LocalizationManager: ObservableObject {
         "save": [.vietnamese: "Lưu", .english: "Save"],
         "delete": [.vietnamese: "Xóa", .english: "Delete"],
         "share": [.vietnamese: "Chia sẻ", .english: "Share"],
+        "back": [.vietnamese: "Quay lại", .english: "Back"],
+        "confirm": [.vietnamese: "Xác nhận", .english: "Confirm"],
         
         // Camera Screen
         "photo": [.vietnamese: "ẢNH", .english: "PHOTO"],
@@ -70,10 +79,16 @@ public class LocalizationManager: ObservableObject {
         "templates": [.vietnamese: "Mẫu dấu", .english: "Templates"],
         "verify": [.vietnamese: "Đối soát", .english: "Verify"],
         "settings": [.vietnamese: "Cài đặt", .english: "Settings"],
-        "simulatedCamera": [.vietnamese: "CAMERA MÔ PHỎNG HD (macOS/Simulator)", .english: "SIMULATED HD CAMERA (macOS/Simulator)"],
+        "gallery": [.vietnamese: "Thư viện", .english: "Gallery"],
+        "flip": [.vietnamese: "Lật", .english: "Flip"],
+        "simulatedCamera": [.vietnamese: "CAMERA MÔ PHỎNG HD (Giả lập)", .english: "SIMULATED HD CAMERA (Simulator)"],
         "flashOff": [.vietnamese: "Tắt", .english: "Off"],
         "flashOn": [.vietnamese: "Bật", .english: "On"],
         "flashAuto": [.vietnamese: "Tự động", .english: "Auto"],
+        "flashTorch": [.vietnamese: "Đèn pin", .english: "Torch"],
+        "filters": [.vietnamese: "Bộ lọc", .english: "Filters"],
+        "stickers": [.vietnamese: "Nhãn dán", .english: "Stickers"],
+        "noSticker": [.vietnamese: "Không dùng", .english: "None"],
         
         // Watermark Live Labels
         "timeLabel": [.vietnamese: "Thời gian: ", .english: "Time: "],
@@ -100,129 +115,88 @@ public class LocalizationManager: ObservableObject {
         "catMinimal": [.vietnamese: "Tối giản", .english: "Minimal"],
         "catCustom": [.vietnamese: "Tùy chỉnh", .english: "Custom"],
         
-        // Positions
-        "posBottomLeft": [.vietnamese: "Góc dưới trái", .english: "Bottom Left"],
-        "posBottomRight": [.vietnamese: "Góc dưới phải", .english: "Bottom Right"],
-        "posTopLeft": [.vietnamese: "Góc trên trái", .english: "Top Left"],
-        "posTopRight": [.vietnamese: "Góc trên phải", .english: "Top Right"],
-        "posCenterBottom": [.vietnamese: "Giữa cạnh dưới", .english: "Center Bottom"],
-        
-        // Badge Styles
-        "styleGlassmorphism": [.vietnamese: "Kính mờ (Glass)", .english: "Glassmorphism"],
-        "styleDarkCard": [.vietnamese: "Hộp đen mờ", .english: "Dark Card"],
-        "styleBorderedStamp": [.vietnamese: "Viền tem công tác", .english: "Bordered Stamp"],
-        "styleMinimal": [.vietnamese: "Chữ bóng đổ (Không nền)", .english: "Minimal Transparent"],
-        
-        // Color Themes
-        "colorSafetyOrange": [.vietnamese: "Cam công trình", .english: "Safety Orange"],
-        "colorBlueprintBlue": [.vietnamese: "Xanh kỹ thuật", .english: "Blueprint Blue"],
-        "colorEmeraldGreen": [.vietnamese: "Xanh lá an toàn", .english: "Emerald Green"],
-        "colorGoldenYellow": [.vietnamese: "Vàng cảnh báo", .english: "Golden Yellow"],
-        "colorSleekDark": [.vietnamese: "Đen mờ hiện đại", .english: "Sleek Dark"],
-        "colorCrispWhite": [.vietnamese: "Trắng tinh khiết", .english: "Crisp White"],
-        
-        // Template Selector & Editor
-        "templateDrawerTitle": [.vietnamese: "Mẫu Watermark Thông Minh", .english: "Intelligent Watermark Templates"],
+        // Template Drawer & Editor
+        "templateDrawerTitle": [.vietnamese: "Thư viện mẫu dấu hiện trường", .english: "Field Watermark Templates"],
         "customize": [.vietnamese: "Tùy biến", .english: "Customize"],
-        "customizerTitle": [.vietnamese: "Tùy Chỉnh Mẫu Dấu", .english: "Customize Template"],
-        "previewSection": [.vietnamese: "Xem trước Watermark", .english: "Watermark Preview"],
-        "infoFieldsSection": [.vietnamese: "Nội dung thông tin hiện trường", .english: "Field Information Content"],
-        "titlePlaceholder": [.vietnamese: "Tiêu đề dấu (vd: TIÊU CHUẨN XÂY DỰNG)", .english: "Title (e.g. CONSTRUCTION STANDARD)"],
-        "projectPlaceholder": [.vietnamese: "Tên dự án / Công trình", .english: "Project / Site Name"],
-        "itemPlaceholder": [.vietnamese: "Hạng mục công việc", .english: "Work Item / Task"],
-        "contractorPlaceholder": [.vietnamese: "Đơn vị thi công / Nhà thầu", .english: "Contractor / Unit"],
-        "inspectorPlaceholder": [.vietnamese: "Người thực hiện / Giám sát", .english: "Inspector / Operator"],
-        "notesPlaceholder": [.vietnamese: "Ghi chú bổ sung", .english: "Additional Notes"],
-        "autoFieldsSection": [.vietnamese: "Trường dữ liệu tự động", .english: "Automatic Metadata Fields"],
-        "toggleTime": [.vietnamese: "Hiển thị ngày giờ thực", .english: "Show Real-time Date & Time"],
-        "toggleSeconds": [.vietnamese: "Hiển thị đến từng giây", .english: "Show Seconds"],
-        "toggleLocation": [.vietnamese: "Hiển thị địa chỉ thực tế", .english: "Show Street Address"],
-        "toggleCoords": [.vietnamese: "Hiển thị tọa độ GPS chính xác", .english: "Show GPS Coordinates"],
-        "toggleAltitude": [.vietnamese: "Hiển thị cao độ địa hình (Altitude)", .english: "Show Altitude"],
-        "toggleWeather": [.vietnamese: "Hiển thị thời tiết & nhiệt độ", .english: "Show Weather & Temperature"],
-        "toggleCompass": [.vietnamese: "Hiển thị la bàn & hướng nhìn", .english: "Show Compass Heading"],
-        "toggleDeviceInfo": [.vietnamese: "Hiển thị thông tin thiết bị", .english: "Show Device Info"],
-        "toggleAntiCounterfeit": [.vietnamese: "Mã QR chống giả mạo (Anti-Counterfeit)", .english: "Anti-Counterfeiting QR Code"],
-        "appearanceSection": [.vietnamese: "Giao diện & Vị trí", .english: "Appearance & Position"],
-        "positionPicker": [.vietnamese: "Vị trí đặt dấu", .english: "Watermark Position"],
-        "badgeStylePicker": [.vietnamese: "Kiểu khung nền", .english: "Badge Frame Style"],
-        "colorThemePicker": [.vietnamese: "Tông màu chủ đạo", .english: "Primary Theme Color"],
-        "opacitySlider": [.vietnamese: "Độ mờ (Opacity)", .english: "Opacity"],
-        "scaleSlider": [.vietnamese: "Kích thước (Scale)", .english: "Scale"],
+        "customizeTemplate": [.vietnamese: "Tùy biến mẫu dấu", .english: "Customize Watermark"],
+        "previewSection": [.vietnamese: "Xem trước trực tiếp", .english: "Live Preview"],
+        "infoFieldsSection": [.vietnamese: "Thông tin hiển thị", .english: "Information Fields"],
+        "titlePlaceholder": [.vietnamese: "Tiêu đề (VD: BIÊN BẢN CÔNG TRÌNH)", .english: "Title (e.g. WORK LOG)"],
+        "projectPlaceholder": [.vietnamese: "Tên dự án / Công trình", .english: "Project Name"],
+        "itemPlaceholder": [.vietnamese: "Hạng mục / Vị trí thi công", .english: "Work Item / Area"],
+        "contractorPlaceholder": [.vietnamese: "Đơn vị tổng thầu / Thi công", .english: "Contractor / Unit"],
+        "inspectorPlaceholder": [.vietnamese: "Người giám sát / Kỹ sư", .english: "Inspector / Engineer"],
+        "notesPlaceholder": [.vietnamese: "Ghi chú hiện trường", .english: "Field Notes"],
+        "togglesSection": [.vietnamese: "Bật / Tắt các trường dữ liệu", .english: "Display Toggles"],
+        "showTimeToggle": [.vietnamese: "Hiển thị thời gian thực", .english: "Show Real-Time Clock"],
+        "showSecondsToggle": [.vietnamese: "Chi tiết giây (hh:mm:ss)", .english: "Show Seconds"],
+        "showLocationToggle": [.vietnamese: "Địa chỉ đường phố (Reverse Geocode)", .english: "Show Street Address"],
+        "showCoordinatesToggle": [.vietnamese: "Tọa độ GPS (Vĩ độ / Kinh độ)", .english: "Show GPS Coordinates"],
+        "showAltitudeToggle": [.vietnamese: "Độ cao so với mực nước biển", .english: "Show Altitude"],
+        "showWeatherToggle": [.vietnamese: "Thời tiết & Nhiệt độ thực tế", .english: "Show Weather & Temp"],
+        "showCompassToggle": [.vietnamese: "La bàn & Góc phương vị", .english: "Show Compass Direction"],
+        "showDeviceInfoToggle": [.vietnamese: "Thông tin thiết bị & Phiên bản", .english: "Show Device Hardware"],
+        "showQRToggle": [.vietnamese: "Mã QR đối soát chống làm giả", .english: "Anti-Counterfeit QR Code"],
+        "styleSection": [.vietnamese: "Kiểu dáng & Tùy biến khung", .english: "Badge Style & Colors"],
+        "badgeStyle": [.vietnamese: "Kiểu khung dấu", .english: "Badge Style"],
+        "colorTheme": [.vietnamese: "Màu sắc chủ đạo", .english: "Color Theme"],
+        "position": [.vietnamese: "Vị trí đặt khung", .english: "Badge Position"],
+        "opacity": [.vietnamese: "Độ mờ đục", .english: "Opacity"],
+        "scale": [.vietnamese: "Kích thước tỷ lệ", .english: "Scale Factor"],
         
-        // Anti-Counterfeiting Query View
-        "queryTitle": [.vietnamese: "Truy Vấn Chống Giả Mạo", .english: "Anti-Counterfeit Query"],
-        "queryHeaderTitle": [.vietnamese: "Xác Thực Hồ Sơ Hiện Trường", .english: "Field Record Authentication"],
-        "queryHeaderDesc": [.vietnamese: "Hệ thống truy vấn chống làm giả ảnh SnapLab Authoritative Verification. Kiểm tra tính toàn vẹn thời gian, GPS và chống chỉnh sửa Photoshop.", .english: "SnapLab Authoritative Verification query system. Validates timestamp integrity, GPS coordinates, and detects Photoshop alterations."],
-        "uploadToCheck": [.vietnamese: "Tải ảnh cần kiểm tra", .english: "Upload Photo to Verify"],
-        "checkSha256Sub": [.vietnamese: "Kiểm tra mã băm SHA-256", .english: "Inspect SHA-256 Checksum"],
-        "scanPhotoQR": [.vietnamese: "Quét mã QR trên ảnh", .english: "Scan Photo QR Code"],
-        "decodeSigSub": [.vietnamese: "Giải mã chữ ký gốc", .english: "Decode Digital Signature"],
-        "orManualInput": [.vietnamese: "Hoặc nhập Mã Xác Thực SnapLab:", .english: "Or enter SnapLab Verification ID:"],
-        "checkBtn": [.vietnamese: "Kiểm tra", .english: "Verify"],
-        "analyzing": [.vietnamese: "Đang tính toán mã băm SHA-256 và đối soát chứng thư số...", .english: "Computing SHA-256 hash and verifying digital certificate..."],
-        "statusAuthentic": [.vietnamese: "ĐÃ XÁC THỰC CHÍNH CHỦ", .english: "AUTHENTIC & VERIFIED"],
-        "statusTampered": [.vietnamese: "CẢNH BÁO: DỮ LIỆU ĐÃ BỊ SỬA ĐỔI", .english: "WARNING: DATA HAS BEEN TAMPERED"],
-        "statusUntrusted": [.vietnamese: "KHÔNG TÌM THẤY CHỮ KÝ GỐC", .english: "UNTRUSTED SIGNATURE"],
-        "authenticDesc": [.vietnamese: "Hồ sơ gốc không bị chỉnh sửa, tem watermark hợp lệ", .english: "Original record is intact, watermark seal is valid"],
-        "tamperedDesc": [.vietnamese: "Ảnh đã bị chỉnh sửa điểm ảnh hoặc sai lệch dữ liệu gốc", .english: "Image pixels have been altered or metadata mismatched"],
-        "certId": [.vietnamese: "Mã chứng thư:", .english: "Certificate ID:"],
-        "certTime": [.vietnamese: "Thời gian chụp gốc:", .english: "Original Capture Time:"],
-        "certLocation": [.vietnamese: "Địa điểm ghi nhận:", .english: "Recorded Location:"],
-        "certCoords": [.vietnamese: "Tọa độ GPS:", .english: "GPS Coordinates:"],
-        "certAltitude": [.vietnamese: "Cao độ địa hình:", .english: "Terrain Altitude:"],
-        "certProject": [.vietnamese: "Dự án / Công trình:", .english: "Project / Site:"],
-        "certInspector": [.vietnamese: "Người thực hiện:", .english: "Operator / Inspector:"],
-        "certDevice": [.vietnamese: "Thiết bị xác thực:", .english: "Authenticated Device:"],
-        "certHash": [.vietnamese: "Mã băm SHA-256:", .english: "SHA-256 Hash:"],
-        "certPhotoshopCheck": [.vietnamese: "Kiểm tra Photoshop:", .english: "Photoshop Inspection:"],
-        "photoshopPass": [.vietnamese: "PASS - Không phát hiện cắt ghép", .english: "PASS - No tampering detected"],
+        // Anti-Counterfeit Query
+        "queryTitle": [.vietnamese: "Tra cứu chống làm giả", .english: "Anti-Counterfeit Query"],
+        "querySubtitle": [.vietnamese: "Kiểm tra tính toàn vẹn của hồ sơ hình ảnh qua hàm băm mật mã SHA-256", .english: "Verify photo integrity via SHA-256 cryptographic proof"],
+        "enterIdOrLink": [.vietnamese: "Nhập mã số hồ sơ hoặc liên kết xác thực", .english: "Enter record ID or snaplab:// link"],
+        "pasteClipboard": [.vietnamese: "Dán", .english: "Paste"],
+        "verifyNow": [.vietnamese: "Kiểm tra ngay", .english: "Verify Now"],
+        "orPickFromAlbum": [.vietnamese: "Hoặc chọn ảnh từ Thư viện để kiểm tra", .english: "Or pick photo from Library to inspect"],
+        "analyzing": [.vietnamese: "Đang phân tích chữ ký số SHA-256...", .english: "Analyzing SHA-256 digital signature..."],
+        "authenticTitle": [.vietnamese: "HỒ SƠ GỐC CHÍNH CHỦ", .english: "GENUINE OFFICIAL RECORD"],
+        "authenticDesc": [.vietnamese: "Hình ảnh khớp 100% với chữ ký mã hóa tại thời điểm chụp.", .english: "The image matches 100% of the cryptographic hash recorded at capture time."],
+        "tamperedTitle": [.vietnamese: "CẢNH BÁO: ẢNH ĐÃ BỊ CHỈNH SỬA / LÀM GIẢ", .english: "WARNING: TAMPERED OR EDITED IMAGE"],
+        "tamperedDesc": [.vietnamese: "Chữ ký mật mã không khớp! Hình ảnh có thể đã bị can thiệp qua Photoshop hoặc metadata bị sửa đổi.", .english: "Checksum mismatch! Image might have been modified via editing tools or metadata altered."],
+        "untrustedTitle": [.vietnamese: "KHÔNG TÌM THẤY TRONG HỆ THỐNG", .english: "RECORD NOT FOUND"],
+        "untrustedDesc": [.vietnamese: "Mã số hồ sơ không tồn tại trong sổ cái xác thực SnapLab.", .english: "The queried ID does not exist in SnapLab authoritative ledger."],
+        "certificateDetails": [.vietnamese: "Chi tiết chứng thư số", .english: "Certificate Details"],
+        "digitalSignature": [.vietnamese: "Chữ ký số: ", .english: "Digital Signature: "],
+        "sha256Checksum": [.vietnamese: "Mã băm SHA-256: ", .english: "SHA-256 Hash: "],
+        "deviceHardware": [.vietnamese: "Thiết bị chụp: ", .english: "Capture Device: "],
+        "systemOS": [.vietnamese: "Hệ điều hành: ", .english: "OS Platform: "],
         
-        // Gallery
-        "galleryTitle": [.vietnamese: "Thư Viện SnapLab", .english: "SnapLab Gallery"],
-        "stampExistingPhoto": [.vietnamese: "Đóng dấu ảnh", .english: "Stamp Photo"],
-        "emptyGalleryTitle": [.vietnamese: "Chưa có ảnh hoặc video nào", .english: "No Photos or Videos Yet"],
-        "emptyGalleryDesc": [.vietnamese: "Chụp ảnh hoặc quay video gắn watermark từ camera, hoặc chọn ảnh từ thư viện để đóng dấu.", .english: "Capture photos or record videos with watermarks, or select photos from library to stamp."],
-        "chooseFromAlbum": [.vietnamese: "Chọn ảnh từ Album để đóng dấu", .english: "Choose Photo from Album to Stamp"],
-        "deleteAlertTitle": [.vietnamese: "Xóa tệp tin này?", .english: "Delete this item?"],
-        "deleteAlertDesc": [.vietnamese: "Ảnh và hồ sơ đóng dấu sẽ bị xóa vĩnh viễn khỏi thiết bị.", .english: "The photo and watermark record will be permanently deleted."],
-        "albumEditorTitle": [.vietnamese: "Đóng Dấu Ảnh Có Sẵn", .english: "Stamp Existing Photo"],
-        "albumPickerPromptTitle": [.vietnamese: "Chọn một ảnh từ máy để đóng dấu", .english: "Select a photo from device to stamp"],
-        "albumPickerPromptDesc": [.vietnamese: "Hệ thống sẽ giữ nguyên độ phân giải gốc của ảnh, gắn watermark thông minh thời gian, GPS và mã QR chống giả.", .english: "Preserves native image resolution while applying smart timestamp, GPS, and anti-counterfeit QR seal."],
-        "openPhotoLibrary": [.vietnamese: "Mở thư viện ảnh", .english: "Open Photo Library"],
-        "savePhoto": [.vietnamese: "Lưu ảnh", .english: "Save Photo"],
+        // Gallery & Album Editor
+        "galleryTitle": [.vietnamese: "Kho ảnh & Video hiện trường", .english: "Field Media Gallery"],
+        "stampPhoto": [.vietnamese: "Đóng dấu ảnh", .english: "Stamp Photo"],
+        "noMediaYet": [.vietnamese: "Chưa có hình ảnh nào được lưu", .english: "No media captured yet"],
+        "albumEditorTitle": [.vietnamese: "Đóng dấu ảnh từ Album", .english: "Stamp Album Photo"],
+        "chooseFromLibrary": [.vietnamese: "Chọn ảnh từ Album máy", .english: "Choose Photo from Library"],
+        "saveAndExport": [.vietnamese: "Lưu & Xuất ảnh", .english: "Save & Export"],
+        "editWatermark": [.vietnamese: "Chỉnh sửa", .english: "Edit"],
+        "savedSuccessfully": [.vietnamese: "Đã lưu ảnh thành công vào Thư viện!", .english: "Saved photo to Library successfully!"],
         
-        // Settings Screen
-        "settingsNavTitle": [.vietnamese: "Cài Đặt", .english: "Settings"],
-        "languageSection": [.vietnamese: "Ngôn ngữ / Language", .english: "Language / Ngôn ngữ"],
-        "appLanguage": [.vietnamese: "Ngôn ngữ hiển thị", .english: "Display Language"],
-        "captureQualitySection": [.vietnamese: "Chất lượng ảnh & Định dạng", .english: "Image Quality & Format"],
-        "exportFormat": [.vietnamese: "Định dạng xuất ảnh", .english: "Export Format"],
-        "jpegQuality": [.vietnamese: "JPEG (95% Giữ nguyên chi tiết)", .english: "JPEG (95% High Quality)"],
-        "heicQuality": [.vietnamese: "HEIC (Tối ưu dung lượng Apple)", .english: "HEIC (Apple Space Efficient)"],
-        "autoSaveToAlbum": [.vietnamese: "Tự động lưu vào Album 'SnapLab'", .english: "Auto-save to 'SnapLab' Album"],
-        "shutterSound": [.vietnamese: "Âm thanh chụp ảnh", .english: "Camera Shutter Sound"],
-        "watermarkDataSection": [.vietnamese: "Định dạng dữ liệu Watermark", .english: "Watermark Data Format"],
-        "gpsCoordinateFormat": [.vietnamese: "Hiển thị Tọa độ GPS", .english: "GPS Coordinates Display"],
-        "coordDms": [.vietnamese: "DMS (Ví dụ: 10°46'37\"N 106°41'55\"E)", .english: "DMS (e.g. 10°46'37\"N 106°41'55\"E)"],
-        "coordDecimal": [.vietnamese: "Thập phân (Ví dụ: 10.77694, 106.70093)", .english: "Decimal (e.g. 10.77694, 106.70093)"],
-        "temperatureUnit": [.vietnamese: "Đơn vị Nhiệt độ", .english: "Temperature Unit"],
+        // Settings
+        "settingsTitle": [.vietnamese: "Cài đặt SnapLab", .english: "SnapLab Settings"],
+        "languageSection": [.vietnamese: "Ngôn ngữ giao diện", .english: "Interface Language"],
+        "appLanguage": [.vietnamese: "Ngôn ngữ", .english: "Language"],
+        "captureQualitySection": [.vietnamese: "Chất lượng & Định dạng", .english: "Quality & Format"],
+        "exportFormat": [.vietnamese: "Định dạng lưu ảnh", .english: "Export Format"],
+        "jpegQuality": [.vietnamese: "JPEG (Tương thích cao)", .english: "JPEG (High Compatibility)"],
+        "heicQuality": [.vietnamese: "HEIC (Tiết kiệm dung lượng)", .english: "HEIC (Efficient)"],
+        "autoSaveToAlbum": [.vietnamese: "Tự động lưu vào Album máy", .english: "Auto-save to Photos Library"],
+        "shutterSound": [.vietnamese: "Âm thanh chụp ảnh", .english: "Shutter Sound Effect"],
+        "watermarkDataSection": [.vietnamese: "Định dạng đơn vị hiện trường", .english: "Field Unit Preferences"],
+        "gpsCoordinateFormat": [.vietnamese: "Định dạng GPS", .english: "GPS Format"],
+        "coordDms": [.vietnamese: "Độ/Phút/Giây (DMS)", .english: "Degrees/Min/Sec (DMS)"],
+        "coordDecimal": [.vietnamese: "Thập phân (DD.DDDD)", .english: "Decimal (DD.DDDD)"],
+        "temperatureUnit": [.vietnamese: "Đơn vị nhiệt độ", .english: "Temperature Unit"],
         "tempCelsius": [.vietnamese: "Độ C (°C)", .english: "Celsius (°C)"],
         "tempFahrenheit": [.vietnamese: "Độ F (°F)", .english: "Fahrenheit (°F)"],
-        "securitySectionTitle": [.vietnamese: "Bảo mật chống làm giả (Anti-Counterfeiting)", .english: "Anti-Counterfeiting Security"],
-        "securityTitle": [.vietnamese: "Chữ Ký Số SHA-256 & QR Code", .english: "Digital Signature SHA-256 & QR Code"],
-        "securityDetailedDesc": [.vietnamese: "Mỗi bức ảnh được chụp từ SnapLab được gắn mã băm cryptographic SHA-256 từ cảm biến camera gốc cùng tọa độ thời gian thực. Bất kỳ sự can thiệp nào bằng Photoshop hoặc phần mềm chỉnh sửa đều bị phát hiện ngay khi quét đối soát.", .english: "Every photo captured with SnapLab is cryptographically signed with a SHA-256 hash of original sensor pixels, timestamp, and GPS. Any tampering or editing with Photoshop is detected immediately during verification query."],
-        "appInfoSection": [.vietnamese: "Thông tin ứng dụng", .english: "About SnapLab"],
-        "appNameTitle": [.vietnamese: "Tên ứng dụng", .english: "Application Name"],
-        "appVersionTitle": [.vietnamese: "Phiên bản", .english: "Version"],
-        "platformTitle": [.vietnamese: "Nền tảng hỗ trợ", .english: "Supported Platforms"],
-        "platformDesc": [.vietnamese: "iOS 16+ & macOS Catalyst", .english: "iOS 16+ & macOS Catalyst"],
-        "copyrightTitle": [.vietnamese: "Bản quyền", .english: "Copyright"],
-        "copyrightDesc": [.vietnamese: "SnapLab Technologies", .english: "SnapLab Technologies"]
+        "digitalLedgerSection": [.vietnamese: "Sổ cái chứng thực chống làm giả", .english: "Authoritative Audit Ledger"],
+        "recordedBlocks": [.vietnamese: "Số hồ sơ đã bảo chứng: ", .english: "Protected records count: "],
+        "clearLedger": [.vietnamese: "Đặt lại sổ cái chứng thực", .english: "Reset Audit Ledger"],
+        "confirmClearLedger": [.vietnamese: "Bạn có chắc muốn xóa toàn bộ lịch sử chứng thực trên máy này?", .english: "Are you sure you want to reset all local verification records?"],
+        "aboutSection": [.vietnamese: "Thông tin ứng dụng", .english: "About SnapLab"],
+        "version": [.vietnamese: "Phiên bản: 2.4.0 (Build 6751682117)", .english: "Version: 2.4.0 (Build 6751682117)"],
+        "devTeam": [.vietnamese: "Được phát triển cho giám sát thi công & nghiệm thu hiện trường", .english: "Engineered for field engineering, QC inspection & law enforcement"]
     ]
-}
-
-// Global localization shortcut
-public func L(_ key: String) -> String {
-    LocalizationManager.shared.t(key)
 }

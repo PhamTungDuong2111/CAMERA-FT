@@ -1,4 +1,4 @@
-import UIKit
+﻿import UIKit
 import CoreGraphics
 import CoreLocation
 
@@ -13,7 +13,9 @@ public class WatermarkRenderer {
         timestamp: Date = Date(),
         locationManager: LocationWeatherManager = .shared
     ) -> UIImage {
-        let fixedImage = ImageUtilities.fixOrientation(for: originalImage)
+        // 1. Apply photo filter first
+        let filteredImage = template.activeFilter.apply(to: originalImage)
+        let fixedImage = ImageUtilities.fixOrientation(for: filteredImage)
         let imageSize = fixedImage.size
         
         let format = UIGraphicsImageRendererFormat()
@@ -29,8 +31,8 @@ public class WatermarkRenderer {
             fixedImage.draw(in: CGRect(origin: .zero, size: imageSize))
             
             // 2. Prepare Watermark drawing parameters
-            let baseWidth = min(imageSize.width, imageSize.height)
-            let scaleFactor = (baseWidth / 1080.0) * CGFloat(template.scale)
+            let baseDimension = min(imageSize.width, imageSize.height)
+            let scaleFactor = (baseDimension / 1080.0) * CGFloat(template.scale)
             
             let loc = LocalizationManager.shared
             
@@ -48,34 +50,33 @@ public class WatermarkRenderer {
                 } else {
                     timeStr = DateFormatter.displayDateFormatter.string(from: timestamp) + " " + DateFormatter.displayTimeFormatter.string(from: timestamp).prefix(5)
                 }
-                lines.append(WatermarkLineItem(icon: "clock.fill", text: loc.t("timeLabel") + timeStr, isHighlight: true))
+                lines.append(WatermarkLineItem(text: loc.t("timeLabel") + timeStr, isHighlight: true))
             }
             
             // Project & Task
             if !template.projectName.isEmpty {
-                lines.append(WatermarkLineItem(icon: "building.2.fill", text: loc.t("projectLabel") + template.projectName, isHighlight: false))
+                lines.append(WatermarkLineItem(text: loc.t("projectLabel") + template.projectName, isHighlight: false))
             }
             if !template.workItem.isEmpty {
-                lines.append(WatermarkLineItem(icon: "hammer.fill", text: loc.t("workItemLabel") + template.workItem, isHighlight: false))
+                lines.append(WatermarkLineItem(text: loc.t("workItemLabel") + template.workItem, isHighlight: false))
             }
             if !template.contractorName.isEmpty {
-                lines.append(WatermarkLineItem(icon: "person.2.fill", text: loc.t("contractorLabel") + template.contractorName, isHighlight: false))
+                lines.append(WatermarkLineItem(text: loc.t("contractorLabel") + template.contractorName, isHighlight: false))
             }
             if !template.inspectorName.isEmpty {
-                lines.append(WatermarkLineItem(icon: "checkmark.seal.fill", text: loc.t("inspectorLabel") + template.inspectorName, isHighlight: false))
+                lines.append(WatermarkLineItem(text: loc.t("inspectorLabel") + template.inspectorName, isHighlight: false))
             }
             
             // Address & GPS
             if template.showLocation && !locationManager.fullAddress.isEmpty {
-                lines.append(WatermarkLineItem(icon: "mappin.and.ellipse", text: loc.t("locationLabel") + locationManager.fullAddress, isHighlight: false))
+                lines.append(WatermarkLineItem(text: loc.t("locationLabel") + locationManager.fullAddress, isHighlight: false))
             }
             if template.showCoordinates {
-                let coordStr = locationManager.formattedCoordinates(latitude: locationManager.latitude, longitude: locationManager.longitude)
-                lines.append(WatermarkLineItem(icon: "location.north.circle.fill", text: loc.t("coordinatesLabel") + coordStr, isHighlight: false))
+                lines.append(WatermarkLineItem(text: loc.t("coordinatesLabel") + locationManager.formattedCoordinates, isHighlight: false))
             }
             if template.showAltitude {
-                let altStr = String(format: "%.1f m", locationManager.altitude)
-                lines.append(WatermarkLineItem(icon: "mountain.2.fill", text: loc.t("altitudeLabel") + altStr, isHighlight: false))
+                let alt = String(format: "%.1f m", locationManager.altitude)
+                lines.append(WatermarkLineItem(text: loc.t("altitudeLabel") + alt, isHighlight: false))
             }
             
             // Weather & Compass
@@ -84,147 +85,140 @@ public class WatermarkRenderer {
                 envParts.append("\(locationManager.weatherCondition) \(locationManager.temperatureCelsius)°C (Độ ẩm \(locationManager.humidityPercent)%)")
             }
             if template.showCompass {
-                envParts.append(loc.t("compassLabel") + "\(locationManager.compassDirection)")
+                envParts.append(loc.t("compassLabel") + locationManager.compassDirection)
             }
             if !envParts.isEmpty {
-                lines.append(WatermarkLineItem(icon: "thermometer.sun.fill", text: envParts.joined(separator: " • "), isHighlight: false))
+                lines.append(WatermarkLineItem(text: envParts.joined(separator: " • "), isHighlight: false))
             }
             
             // Notes
             if !template.customNotes.isEmpty {
-                lines.append(WatermarkLineItem(icon: "doc.text.fill", text: loc.t("notesLabel") + template.customNotes, isHighlight: false))
+                lines.append(WatermarkLineItem(text: loc.t("notesLabel") + template.customNotes, isHighlight: false))
             }
             
-            // Anti-Counterfeiting verification code
-            if template.showAntiCounterfeitQR, let record = verificationRecord {
-                lines.append(WatermarkLineItem(icon: "qrcode.viewfinder", text: loc.t("verifyCodeLabel") + record.id, isHighlight: true))
+            // Verification Code
+            if template.showAntiCounterfeitQR, let rec = verificationRecord {
+                lines.append(WatermarkLineItem(text: loc.t("verifyCodeLabel") + rec.id, isHighlight: true))
             }
             
-            // 3. Layout calculation
+            // 3. Measure Card Dimensions
             let cardWidth = min(imageSize.width * 0.88, 620.0 * scaleFactor)
-            let padding: CGFloat = 20.0 * scaleFactor
-            let qrSize: CGFloat = template.showAntiCounterfeitQR ? (100.0 * scaleFactor) : 0.0
-            let availableTextWidth = cardWidth - (padding * 2) - (template.showAntiCounterfeitQR ? (qrSize + 16.0 * scaleFactor) : 0)
+            let padding = 20.0 * scaleFactor
+            let qrSize: CGFloat = template.showAntiCounterfeitQR ? 105.0 * scaleFactor : 0.0
+            let textWidth = cardWidth - (padding * 2) - (template.showAntiCounterfeitQR ? qrSize + 16.0 * scaleFactor : 0)
             
-            let headerFontSize: CGFloat = 18.0 * scaleFactor
-            let titleFontSize: CGFloat = 22.0 * scaleFactor
-            let bodyFontSize: CGFloat = 14.5 * scaleFactor
+            let titleFont = UIFont.systemFont(ofSize: 21.0 * scaleFactor, weight: .bold)
+            let catFont = UIFont.systemFont(ofSize: 14.0 * scaleFactor, weight: .bold)
+            let bodyFont = UIFont.systemFont(ofSize: 13.5 * scaleFactor, weight: .medium)
+            let highlightFont = UIFont.systemFont(ofSize: 13.5 * scaleFactor, weight: .bold)
             
-            let fontHeader = UIFont.systemFont(ofSize: headerFontSize, weight: .bold)
-            let fontTitle = UIFont.systemFont(ofSize: titleFontSize, weight: .heavy)
-            let fontBody = UIFont.systemFont(ofSize: bodyFontSize, weight: .medium)
-            let fontHighlight = UIFont.systemFont(ofSize: bodyFontSize, weight: .bold)
-            
-            // Estimate height
-            var totalHeight: CGFloat = padding * 2 + 35.0 * scaleFactor
+            // Calculate total card height
+            var contentHeight = padding + 34.0 * scaleFactor // title + header space
             for item in lines {
-                let bounding = (item.text as NSString).boundingRect(
-                    with: CGSize(width: availableTextWidth, height: 200),
-                    options: [.usesLineFragmentOrigin, .usesFontLeading],
-                    attributes: [.font: item.isHighlight ? fontHighlight : fontBody],
-                    context: nil
-                )
-                totalHeight += max(24.0 * scaleFactor, bounding.height + (6.0 * scaleFactor))
+                let font = item.isHighlight ? highlightFont : bodyFont
+                let itemHeight = measureTextHeight(item.text, font: font, maxWidth: textWidth)
+                contentHeight += itemHeight + 6.0 * scaleFactor
             }
+            contentHeight += padding
+            
             if template.showAntiCounterfeitQR {
-                totalHeight = max(totalHeight, qrSize + padding * 2)
+                contentHeight = max(contentHeight, qrSize + padding * 2 + 18.0 * scaleFactor)
             }
             
-            // Determine Position Rect
-            let margin: CGFloat = 36.0 * scaleFactor
+            // Card Positioning
+            let margin = 36.0 * scaleFactor
             var cardX: CGFloat = margin
-            var cardY: CGFloat = imageSize.height - totalHeight - margin
+            var cardY: CGFloat = imageSize.height - contentHeight - margin
             
             switch template.position {
             case .bottomLeft:
                 cardX = margin
-                cardY = imageSize.height - totalHeight - margin
+                cardY = imageSize.height - contentHeight - margin
             case .bottomRight:
                 cardX = imageSize.width - cardWidth - margin
-                cardY = imageSize.height - totalHeight - margin
+                cardY = imageSize.height - contentHeight - margin
             case .topLeft:
                 cardX = margin
-                cardY = margin + 40.0 * scaleFactor
+                cardY = margin + 20.0 * scaleFactor
             case .topRight:
                 cardX = imageSize.width - cardWidth - margin
-                cardY = margin + 40.0 * scaleFactor
+                cardY = margin + 20.0 * scaleFactor
             case .centerBottom:
-                cardX = (imageSize.width - cardWidth) / 2
-                cardY = imageSize.height - totalHeight - margin
+                cardX = (imageSize.width - cardWidth) / 2.0
+                cardY = imageSize.height - contentHeight - margin
             }
             
-            let cardRect = CGRect(x: cardX, y: cardY, width: cardWidth, height: totalHeight)
+            let cardRect = CGRect(x: cardX, y: cardY, width: cardWidth, height: contentHeight)
+            let cornerRadius = 16.0 * scaleFactor
             
-            // 4. Draw Background Badge according to Style
-            cgContext.saveGState()
-            cgContext.setAlpha(CGFloat(template.opacity))
-            
-            let cornerRadius: CGFloat = 16.0 * scaleFactor
-            let path = UIBezierPath(roundedRect: cardRect, cornerRadius: cornerRadius)
+            // 4. Draw Background Card by BadgeStyle
+            let cardPath = UIBezierPath(roundedRect: cardRect, cornerRadius: cornerRadius)
+            let themeColor = template.colorTheme.uiColor
             
             switch template.badgeStyle {
             case .glassmorphism:
-                // Dark translucent base + gradient tint
-                UIColor(white: 0.05, alpha: 0.72).setFill()
-                path.fill()
+                let alpha = CGFloat(template.opacity * 0.85).clamped(to: 0.3...0.95)
+                cgContext.setFillColor(UIColor(red: 0.05, green: 0.06, blue: 0.08, alpha: alpha).cgColor)
+                cgContext.addPath(cardPath.cgPath)
+                cgContext.fillPath()
                 
-                // Border highlight
-                cgContext.setStrokeColor(template.colorTheme.accentUiColor.withAlphaComponent(0.6).cgColor)
-                cgContext.setLineWidth(2.0 * scaleFactor)
-                path.stroke()
+                cgContext.setStrokeColor(themeColor.withAlphaComponent(0.65).cgColor)
+                cgContext.setLineWidth(2.5 * scaleFactor)
+                cgContext.addPath(cardPath.cgPath)
+                cgContext.strokePath()
                 
             case .darkCard:
-                UIColor(red: 0.10, green: 0.11, blue: 0.13, alpha: 0.88).setFill()
-                path.fill()
-                cgContext.setStrokeColor(UIColor.white.withAlphaComponent(0.2).cgColor)
+                let alpha = CGFloat(template.opacity * 0.95).clamped(to: 0.4...1.0)
+                cgContext.setFillColor(UIColor(red: 0.09, green: 0.10, blue: 0.13, alpha: alpha).cgColor)
+                cgContext.addPath(cardPath.cgPath)
+                cgContext.fillPath()
+                
+                cgContext.setStrokeColor(UIColor.white.withAlphaComponent(0.25).cgColor)
                 cgContext.setLineWidth(1.5 * scaleFactor)
-                path.stroke()
+                cgContext.addPath(cardPath.cgPath)
+                cgContext.strokePath()
                 
             case .borderedStamp:
-                UIColor(white: 0.0, alpha: 0.65).setFill()
-                path.fill()
-                cgContext.setStrokeColor(template.colorTheme.accentUiColor.cgColor)
-                cgContext.setLineWidth(3.0 * scaleFactor)
-                path.stroke()
+                let alpha = CGFloat(template.opacity * 0.90).clamped(to: 0.4...1.0)
+                cgContext.setFillColor(UIColor(red: 0.04, green: 0.04, blue: 0.05, alpha: alpha).cgColor)
+                cgContext.addPath(cardPath.cgPath)
+                cgContext.fillPath()
+                
+                cgContext.setStrokeColor(themeColor.cgColor)
+                cgContext.setLineWidth(3.5 * scaleFactor)
+                cgContext.addPath(cardPath.cgPath)
+                cgContext.strokePath()
                 
             case .minimalTransparent:
-                // Subtle shadow back plate for readability
-                UIColor(white: 0.0, alpha: 0.35).setFill()
-                path.fill()
+                let alpha = CGFloat(template.opacity * 0.45).clamped(to: 0.15...0.75)
+                cgContext.setFillColor(UIColor.black.withAlphaComponent(alpha).cgColor)
+                cgContext.addPath(cardPath.cgPath)
+                cgContext.fillPath()
             }
             
-            cgContext.restoreGState()
-            
-            // 5. Draw Header Accent Pill & Title
-            let accentColor = template.colorTheme.accentUiColor
-            let accentBarRect = CGRect(x: cardX + padding, y: cardY + padding, width: 4.0 * scaleFactor, height: 26.0 * scaleFactor)
-            let accentBar = UIBezierPath(roundedRect: accentBarRect, cornerRadius: 2.0 * scaleFactor)
-            accentColor.setFill()
-            accentBar.fill()
+            // 5. Draw Header: Vertical Accent Bar + Title + Category Pill
+            let barRect = CGRect(x: cardX + padding, y: cardY + padding, width: 4.0 * scaleFactor, height: 22.0 * scaleFactor)
+            cgContext.setFillColor(themeColor.cgColor)
+            cgContext.fill(barRect)
             
             let titleAttrs: [NSAttributedString.Key: Any] = [
-                .font: fontTitle,
+                .font: titleFont,
                 .foregroundColor: UIColor.white
             ]
-            (title as NSString).draw(
-                at: CGPoint(x: cardX + padding + 12.0 * scaleFactor, y: cardY + padding + 1.0 * scaleFactor),
-                withAttributes: titleAttrs
-            )
+            let titleRect = CGRect(x: cardX + padding + 12.0 * scaleFactor, y: cardY + padding, width: textWidth - 100 * scaleFactor, height: 26.0 * scaleFactor)
+            (title as NSString).draw(in: titleRect, withAttributes: titleAttrs)
             
-            // Category tag on the right of header
             let catText = "● " + template.category.localizedName(in: loc.currentLanguage)
             let catAttrs: [NSAttributedString.Key: Any] = [
-                .font: fontHeader,
-                .foregroundColor: accentColor
+                .font: catFont,
+                .foregroundColor: themeColor
             ]
             let catSize = (catText as NSString).size(withAttributes: catAttrs)
-            (catText as NSString).draw(
-                at: CGPoint(x: cardX + cardWidth - padding - catSize.width, y: cardY + padding + 3.0 * scaleFactor),
-                withAttributes: catAttrs
-            )
+            let catRect = CGRect(x: cardX + cardWidth - padding - catSize.width, y: cardY + padding + 2.0 * scaleFactor, width: catSize.width, height: catSize.height)
+            (catText as NSString).draw(in: catRect, withAttributes: catAttrs)
             
-            // Divider line
-            let dividerY = cardY + padding + 32.0 * scaleFactor
+            // Divider Line
+            let dividerY = cardY + padding + 28.0 * scaleFactor
             cgContext.setStrokeColor(UIColor.white.withAlphaComponent(0.2).cgColor)
             cgContext.setLineWidth(1.0 * scaleFactor)
             cgContext.move(to: CGPoint(x: cardX + padding, y: dividerY))
@@ -232,72 +226,90 @@ public class WatermarkRenderer {
             cgContext.strokePath()
             
             // 6. Draw Content Lines
-            var currentY = dividerY + 10.0 * scaleFactor
+            var currentY = dividerY + 12.0 * scaleFactor
             for item in lines {
-                let paragraphStyle = NSMutableParagraphStyle()
-                paragraphStyle.lineBreakMode = .byWordWrapping
-                
-                let textColor = item.isHighlight ? accentColor : UIColor.white.withAlphaComponent(0.92)
-                let itemFont = item.isHighlight ? fontHighlight : fontBody
-                
+                let font = item.isHighlight ? highlightFont : bodyFont
+                let color = item.isHighlight ? themeColor : UIColor.white.withAlphaComponent(0.92)
                 let attrs: [NSAttributedString.Key: Any] = [
-                    .font: itemFont,
-                    .foregroundColor: textColor,
-                    .paragraphStyle: paragraphStyle
+                    .font: font,
+                    .foregroundColor: color
                 ]
-                
-                let drawRect = CGRect(
-                    x: cardX + padding,
-                    y: currentY,
-                    width: availableTextWidth,
-                    height: 100
-                )
-                
-                let bounding = (item.text as NSString).boundingRect(
-                    with: CGSize(width: availableTextWidth, height: 100),
-                    options: [.usesLineFragmentOrigin, .usesFontLeading],
-                    attributes: attrs,
-                    context: nil
-                )
-                
-                (item.text as NSString).draw(in: drawRect, withAttributes: attrs)
-                currentY += max(20.0 * scaleFactor, bounding.height + (4.0 * scaleFactor))
+                let rect = CGRect(x: cardX + padding, y: currentY, width: textWidth, height: 120.0 * scaleFactor)
+                (item.text as NSString).draw(in: rect, withAttributes: attrs)
+                let height = measureTextHeight(item.text, font: font, maxWidth: textWidth)
+                currentY += height + 5.0 * scaleFactor
             }
             
             // 7. Draw Anti-Counterfeiting QR Code
-            if template.showAntiCounterfeitQR, let record = verificationRecord {
-                let qrPayload = record.toQRCodePayload()
-                if let qrImage = ImageUtilities.generateQRCode(from: qrPayload, size: CGSize(width: qrSize, height: qrSize)) {
-                    let qrX = cardX + cardWidth - padding - qrSize
-                    let qrY = cardY + totalHeight - padding - qrSize - 4.0 * scaleFactor
-                    let qrRect = CGRect(x: qrX, y: qrY, width: qrSize, height: qrSize)
-                    
-                    // White border background for QR code
-                    let qrBgPath = UIBezierPath(roundedRect: qrRect.insetBy(dx: -4.0 * scaleFactor, dy: -4.0 * scaleFactor), cornerRadius: 6.0 * scaleFactor)
-                    UIColor.white.setFill()
-                    qrBgPath.fill()
-                    
+            if template.showAntiCounterfeitQR, let rec = verificationRecord {
+                let qrX = cardX + cardWidth - padding - qrSize
+                let qrY = cardY + contentHeight - padding - qrSize - 14.0 * scaleFactor
+                let qrRect = CGRect(x: qrX, y: qrY, width: qrSize, height: qrSize)
+                
+                // White backing plate
+                let plateRect = qrRect.insetBy(dx: -4.0 * scaleFactor, dy: -4.0 * scaleFactor)
+                let platePath = UIBezierPath(roundedRect: plateRect, cornerRadius: 6.0 * scaleFactor)
+                cgContext.setFillColor(UIColor.white.cgColor)
+                cgContext.addPath(platePath.cgPath)
+                cgContext.fillPath()
+                
+                if let qrImage = ImageUtilities.generateQRCode(from: rec.toQRCodePayload(), size: CGSize(width: qrSize, height: qrSize)) {
                     qrImage.draw(in: qrRect)
-                    
-                    // Small caption under QR
-                    let label = loc.t("scanToVerify")
-                    let labelAttrs: [NSAttributedString.Key: Any] = [
-                        .font: UIFont.systemFont(ofSize: 8.5 * scaleFactor, weight: .bold),
-                        .foregroundColor: UIColor.white.withAlphaComponent(0.8)
-                    ]
-                    let labelSize = (label as NSString).size(withAttributes: labelAttrs)
-                    (label as NSString).draw(
-                        at: CGPoint(x: qrX + (qrSize - labelSize.width) / 2, y: qrY + qrSize + 6.0 * scaleFactor),
-                        withAttributes: labelAttrs
-                    )
                 }
+                
+                // Label under QR code
+                let label = loc.t("scanToVerify")
+                let labelAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 8.5 * scaleFactor, weight: .bold),
+                    .foregroundColor: UIColor.white.withAlphaComponent(0.85)
+                ]
+                let lSize = (label as NSString).size(withAttributes: labelAttrs)
+                let lRect = CGRect(x: qrX + (qrSize - lSize.width) / 2.0, y: qrY + qrSize + 8.0 * scaleFactor, width: lSize.width, height: lSize.height)
+                (label as NSString).draw(in: lRect, withAttributes: labelAttrs)
+            }
+            
+            // 8. Draw Active Sticker Badge (if any)
+            if let sticker = template.activeSticker {
+                let stickerSize = 145.0 * scaleFactor
+                let stickerMargin = 30.0 * scaleFactor
+                let stickerX: CGFloat
+                if template.position == .topRight || template.position == .bottomRight {
+                    stickerX = stickerMargin
+                } else {
+                    stickerX = imageSize.width - stickerSize - stickerMargin
+                }
+                let stickerY: CGFloat
+                if template.position == .topLeft || template.position == .topRight {
+                    stickerY = imageSize.height - stickerSize - stickerMargin
+                } else {
+                    stickerY = stickerMargin + 20.0 * scaleFactor
+                }
+                let stickerRect = CGRect(x: stickerX, y: stickerY, width: stickerSize, height: stickerSize)
+                sticker.draw(in: cgContext, rect: stickerRect)
             }
         }
     }
+    
+    private func measureTextHeight(_ text: String, font: UIFont, maxWidth: CGFloat) -> CGFloat {
+        let constraintRect = CGSize(width: maxWidth, height: .greatestFiniteMagnitude)
+        let boundingBox = (text as NSString).boundingRect(
+            with: constraintRect,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: font],
+            context: nil
+        )
+        return max(font.lineHeight, ceil(boundingBox.height))
+    }
 }
 
-private struct WatermarkLineItem {
-    let icon: String
+// Data Model for line item
+fileprivate struct WatermarkLineItem {
     let text: String
     let isHighlight: Bool
+}
+
+fileprivate extension Comparable {
+    func clamped(to limits: ClosedRange<Self>) -> Self {
+        return min(max(self, limits.lowerBound), limits.upperBound)
+    }
 }

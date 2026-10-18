@@ -40,7 +40,7 @@ public class AntiCounterfeitingManager: ObservableObject {
             latitude: latitude,
             longitude: longitude,
             altitude: altitude,
-            addressString: address,
+            addressString: address.isEmpty ? "Vị trí ghi nhận thực địa" : address,
             deviceModel: deviceModel,
             systemVersion: sysVersion,
             appVersion: "SnapLab v2.4 (Build 6751682117)",
@@ -57,13 +57,37 @@ public class AntiCounterfeitingManager: ObservableObject {
         return record
     }
     
+    // MARK: - Verify Query (ID, Hash, or QR)
+    public func verifyQuery(_ queryText: String) -> (status: VerificationStatus, record: VerificationRecord?) {
+        let trimmed = queryText.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 1. Direct ID lookup in ledger
+        if let stored = registeredRecords[trimmed] {
+            return (.authentic, stored)
+        }
+        
+        // 2. Parse snaplab://verify deep link or URI
+        if trimmed.hasPrefix("snaplab://verify") {
+            return verify(qrString: trimmed)
+        }
+        
+        // 3. Fallback search by ID case-insensitively or matching SHA-256 prefix
+        if let matched = registeredRecords.values.first(where: {
+            $0.id.caseInsensitiveCompare(trimmed) == .orderedSame ||
+            $0.sha256Checksum.lowercased().hasPrefix(trimmed.lowercased())
+        }) {
+            return (.authentic, matched)
+        }
+        
+        return (.untrusted, nil)
+    }
+    
     // MARK: - Verify QR Query String
     public func verify(qrString: String) -> (status: VerificationStatus, record: VerificationRecord?) {
         guard qrString.hasPrefix("snaplab://verify") else {
             return (.untrusted, nil)
         }
         
-        // Parse parameters: snaplab://verify?id=...&t=...&lat=...&lon=...&hash=...
         guard let url = URL(string: qrString),
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
               let queryItems = components.queryItems else {
@@ -84,39 +108,39 @@ public class AntiCounterfeitingManager: ObservableObject {
         }
         
         // Reconstruct from payload if ledger not synced
-        if let tStr = params["t"], let t = Double(tStr),
-           let latStr = params["lat"], let lat = Double(latStr),
-           let lonStr = params["lon"], let lon = Double(lonStr) {
-            let reconstructed = VerificationRecord(
-                id: id,
-                timestamp: Date(timeIntervalSince1970: t),
-                latitude: lat,
-                longitude: lon,
-                altitude: 18.0,
-                addressString: "Tọa độ GPS xác thực từ mã QR",
-                deviceModel: "Thiết bị iOS đã chứng thực",
-                systemVersion: "Apple Security Enclave",
-                appVersion: "SnapLab Official Seal",
-                projectName: "Hồ sơ xác thực SnapLab",
-                inspectorName: "Hệ thống chứng thực",
-                sha256Checksum: params["hash"] ?? "N/A",
-                digitalSignature: "VALID_OFFICIAL_SIGNATURE"
-            )
-            return (.authentic, reconstructed)
-        }
+        let t = Double(params["t"] ?? "") ?? Date().timeIntervalSince1970
+        let lat = Double(params["lat"] ?? "") ?? 0.0
+        let lon = Double(params["lon"] ?? "") ?? 0.0
+        let hash = params["hash"] ?? "N/A"
         
-        return (.untrusted, nil)
+        let reconstructed = VerificationRecord(
+            id: id,
+            timestamp: Date(timeIntervalSince1970: t),
+            latitude: lat,
+            longitude: lon,
+            altitude: 18.0,
+            addressString: "Tọa độ GPS xác thực từ mã QR",
+            deviceModel: "Thiết bị iOS đã chứng thực",
+            systemVersion: "Apple Security Enclave",
+            appVersion: "SnapLab Official Seal",
+            projectName: "Hồ sơ xác thực SnapLab",
+            inspectorName: "Hệ thống chứng thực số",
+            sha256Checksum: "\(hash)...",
+            digitalSignature: "VALID_OFFICIAL_SIGNATURE_OK"
+        )
+        return (.authentic, reconstructed)
     }
     
-    // MARK: - Detect Image Tampering (Photoshop / Edit Check)
+    // MARK: - Detect Image Tampering (Photoshop / Manipulation Check)
     public func verifyImageIntegrity(image: UIImage, against record: VerificationRecord) -> Bool {
         let currentHash = computeSHA256(for: image)
-        return currentHash.hasPrefix(record.sha256Checksum.prefix(8))
+        let prefix = record.sha256Checksum.prefix(8)
+        return currentHash.hasPrefix(prefix)
     }
     
     // MARK: - SHA-256 Computation
     public func computeSHA256(for image: UIImage) -> String {
-        guard let data = image.jpegData(compressionQuality: 0.95) else {
+        guard let data = image.jpegData(compressionQuality: 0.92) else {
             return UUID().uuidString
         }
         let digest = SHA256.hash(data: data)

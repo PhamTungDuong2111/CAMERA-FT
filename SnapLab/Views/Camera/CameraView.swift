@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 import AudioToolbox
 
 public struct CameraView: View {
@@ -56,10 +56,12 @@ public struct CameraView: View {
                 }
             }
             
-            // 5. Controls Overlay Deck (Top bar, Zoom, Shutter, Gallery, Flip)
+            // 5. Controls Overlay Deck (Top bar, Filters, Stickers, Zoom, Shutter, Gallery, Flip)
             CameraControlsView(
                 cameraManager: cameraManager,
                 currentMode: $currentMode,
+                activeFilter: $selectedTemplate.activeFilter,
+                activeSticker: $selectedTemplate.activeSticker,
                 onCapturePhoto: performPhotoCapture,
                 onToggleVideo: performVideoToggle,
                 onOpenGallery: { showingGallery = true },
@@ -206,7 +208,7 @@ public struct CameraView: View {
                 inspectorName: selectedTemplate.inspectorName
             )
             
-            // 2. Render high resolution watermark onto raw image
+            // 2. Render high resolution watermark onto raw image (includes filter & sticker)
             let watermarkedImage = WatermarkRenderer.shared.renderWatermark(
                 on: rawImage,
                 template: selectedTemplate,
@@ -230,10 +232,8 @@ public struct CameraView: View {
     }
     
     private func processCapturedVideo(_ url: URL) {
-        // Handle video save to library
-        let dummyThumb = ImageUtilities.generateSyntheticScene()
-        photoLibraryManager.saveWatermarkedPhoto(
-            image: dummyThumb,
+        photoLibraryManager.saveRecordedVideo(
+            url: url,
             template: selectedTemplate,
             verificationRecord: currentPreviewVerificationRecord
         )

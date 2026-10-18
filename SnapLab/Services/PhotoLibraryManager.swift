@@ -1,6 +1,7 @@
-import Foundation
+﻿import Foundation
 import UIKit
 import Photos
+import AVFoundation
 import Combine
 
 public class PhotoLibraryManager: ObservableObject {
@@ -69,6 +70,77 @@ public class PhotoLibraryManager: ObservableObject {
         saveToSystemPhotoLibrary(image: image)
     }
     
+    // MARK: - Save Recorded Video
+    public func saveRecordedVideo(
+        url: URL,
+        template: WatermarkTemplate,
+        verificationRecord: VerificationRecord?
+    ) {
+        let mediaId = UUID().uuidString
+        let videoFileName = "\(mediaId).mp4"
+        let thumbFileName = "\(mediaId)_thumb.jpg"
+        
+        let videoURL = documentsDirectory.appendingPathComponent(videoFileName)
+        let thumbURL = documentsDirectory.appendingPathComponent(thumbFileName)
+        
+        // Copy temporary video file to documents directory
+        try? FileManager.default.copyItem(at: url, to: videoURL)
+        
+        // Generate video thumbnail
+        let asset = AVAsset(url: videoURL)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        imageGenerator.appliesPreferredTrackTransform = true
+        let time = CMTime(seconds: 0.5, preferredTimescale: 600)
+        let durationSec = CMTimeGetSeconds(asset.duration)
+        
+        if let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) {
+            let thumbImage = UIImage(cgImage: cgImage)
+            if let data = thumbImage.jpegData(compressionQuality: 0.8) {
+                try? data.write(to: thumbURL)
+            }
+        }
+        
+        let fileSize = (try? FileManager.default.attributesOfItem(atPath: videoURL.path)[.size] as? Int64) ?? 0
+        
+        let newItem = CapturedMedia(
+            id: mediaId,
+            type: .video,
+            localFileName: videoFileName,
+            thumbnailFileName: thumbFileName,
+            creationDate: Date(),
+            templateId: template.id,
+            templateName: template.name,
+            verificationRecord: verificationRecord,
+            durationSeconds: durationSec.isFinite && durationSec > 0 ? durationSec : nil,
+            fileSize: fileSize
+        )
+        
+        DispatchQueue.main.async {
+            self.mediaItems.insert(newItem, at: 0)
+            self.saveMediaIndex()
+        }
+        
+        // Save to system Photo Library
+        PHPhotoLibrary.requestAuthorization { status in
+            guard status == .authorized || status == .limited else { return }
+            PHPhotoLibrary.shared().performChanges({
+                let request = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: videoURL)
+                guard let placeholder = request?.placeholderForCreatedAsset else { return }
+                
+                let fetchOptions = PHFetchOptions()
+                fetchOptions.predicate = NSPredicate(format: "title = %@", self.albumName)
+                let collections = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions)
+                if let album = collections.firstObject {
+                    let albumChangeRequest = PHAssetCollectionChangeRequest(for: album)
+                    albumChangeRequest?.addAssets([placeholder] as NSArray)
+                } else {
+                    let albumChangeRequest = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: self.albumName)
+                    albumChangeRequest.addAssets([placeholder] as NSArray)
+                }
+            }, completionHandler: nil)
+        }
+    }
+    
     // MARK: - Save System Photo Library
     private func saveToSystemPhotoLibrary(image: UIImage) {
         PHPhotoLibrary.requestAuthorization { status in
@@ -78,7 +150,6 @@ public class PhotoLibraryManager: ObservableObject {
                 let request = PHAssetChangeRequest.creationRequestForAsset(from: image)
                 guard let placeholder = request.placeholderForCreatedAsset else { return }
                 
-                // Add to custom SnapLab album
                 let fetchOptions = PHFetchOptions()
                 fetchOptions.predicate = NSPredicate(format: "title = %@", self.albumName)
                 let collections = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions)
