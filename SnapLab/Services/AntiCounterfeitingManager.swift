@@ -57,6 +57,14 @@ public class AntiCounterfeitingManager: ObservableObject {
         return record
     }
     
+    // MARK: - Decode QR Code Directly from Image (CIDetector)
+    public func decodeQRCode(from image: UIImage) -> String? {
+        guard let ciImage = CIImage(image: image) else { return nil }
+        let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+        let features = detector?.features(in: ciImage) as? [CIQRCodeFeature]
+        return features?.first?.messageString
+    }
+    
     // MARK: - Verify Query (ID, Hash, or QR)
     public func verifyQuery(_ queryText: String) -> (status: VerificationStatus, record: VerificationRecord?) {
         let trimmed = queryText.trimmingCharacters(in: .whitespacesAndNewlines)

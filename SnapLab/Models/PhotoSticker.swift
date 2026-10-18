@@ -1,29 +1,62 @@
-﻿import SwiftUI
+import SwiftUI
 import CoreGraphics
 
 public enum PhotoSticker: String, CaseIterable, Identifiable, Codable {
-    case passedQC = "PASSED_QC"
-    case urgentDefect = "URGENT_DEFECT"
-    case safetyFirst = "SAFETY_FIRST"
-    case architectVerified = "ARCHITECT_VERIFIED"
+    case approved = "approved"
+    case passed = "passed"
+    case safetyFirst = "safety_first"
+    case urgent = "urgent"
+    case handover = "handover"
+    case vipSeal = "vip_seal"
+    
+    // Backward compatibility aliases
+    public static var passedQC: PhotoSticker { .passed }
+    public static var urgentDefect: PhotoSticker { .urgent }
+    public static var architectVerified: PhotoSticker { .vipSeal }
     
     public var id: String { rawValue }
     
     public var titleVi: String {
         switch self {
-        case .passedQC: return "Nghiệm thu ĐẠT"
-        case .urgentDefect: return "Khuyết tật khẩn cấp"
-        case .safetyFirst: return "An toàn là trên hết"
-        case .architectVerified: return "KTS Đã phê duyệt"
+        case .approved: return "ĐÃ DUYỆT"
+        case .passed: return "NGHIỆM THU ĐẠT"
+        case .safetyFirst: return "SAFETY FIRST"
+        case .urgent: return "KHẨN CẤP"
+        case .handover: return "BÀN GIAO HỒ SƠ"
+        case .vipSeal: return "VIP SEAL"
         }
     }
     
     public var titleEn: String {
         switch self {
-        case .passedQC: return "QC Passed"
-        case .urgentDefect: return "Urgent Defect"
-        case .safetyFirst: return "Safety First"
-        case .architectVerified: return "Architect Verified"
+        case .approved: return "APPROVED"
+        case .passed: return "QC PASSED"
+        case .safetyFirst: return "SAFETY FIRST"
+        case .urgent: return "URGENT"
+        case .handover: return "HANDOVER"
+        case .vipSeal: return "VIP SEAL"
+        }
+    }
+    
+    public var subtitleVi: String {
+        switch self {
+        case .approved: return "ĐÃ PHÊ DUYỆT CHÍNH THỨC"
+        case .passed: return "CHẤT LƯỢNG ĐẠT CHUẨN"
+        case .safetyFirst: return "AN TOÀN LÀ TRÊN HẾT"
+        case .urgent: return "CẦN XỬ LÝ GẤP"
+        case .handover: return "HỒ SƠ BÀN GIAO"
+        case .vipSeal: return "CHỨNG THỰC XUẤT SẮC"
+        }
+    }
+    
+    public var subtitleEn: String {
+        switch self {
+        case .approved: return "OFFICIALLY APPROVED"
+        case .passed: return "QUALITY CONTROL PASSED"
+        case .safetyFirst: return "PRIORITY SAFETY"
+        case .urgent: return "PRIORITY DISPATCH"
+        case .handover: return "OFFICIAL HANDOVER"
+        case .vipSeal: return "VERIFIED EXCELLENCE"
         }
     }
     
@@ -31,102 +64,86 @@ public enum PhotoSticker: String, CaseIterable, Identifiable, Codable {
         return isVi ? titleVi : titleEn
     }
     
+    public func displaySubtitle(isVi: Bool) -> String {
+        return isVi ? subtitleVi : subtitleEn
+    }
+    
     // Primary Badge Color
     public var badgeColor: Color {
         switch self {
-        case .passedQC: return Color(red: 0.12, green: 0.45, blue: 0.95)
-        case .urgentDefect: return Color(red: 0.95, green: 0.22, blue: 0.22)
-        case .safetyFirst: return Color(red: 0.15, green: 0.85, blue: 0.45)
-        case .architectVerified: return Color(red: 1.00, green: 0.78, blue: 0.15)
+        case .approved: return Color(red: 0.00, green: 0.90, blue: 0.46) // #00E676
+        case .passed: return Color(red: 0.00, green: 0.40, blue: 1.00) // #0066FF
+        case .safetyFirst: return Color(red: 1.00, green: 0.42, blue: 0.00) // #FF6B00
+        case .urgent: return Color(red: 1.00, green: 0.09, blue: 0.27) // #FF1744
+        case .handover: return Color(red: 0.49, green: 0.30, blue: 1.00) // #7C4DFF
+        case .vipSeal: return Color(red: 1.00, green: 0.84, blue: 0.00) // #FFD700
         }
     }
     
     public var uiColor: UIColor {
         switch self {
-        case .passedQC: return UIColor(red: 0.12, green: 0.45, blue: 0.95, alpha: 1.0)
-        case .urgentDefect: return UIColor(red: 0.95, green: 0.22, blue: 0.22, alpha: 1.0)
-        case .safetyFirst: return UIColor(red: 0.15, green: 0.85, blue: 0.45, alpha: 1.0)
-        case .architectVerified: return UIColor(red: 1.00, green: 0.78, blue: 0.15, alpha: 1.0)
+        case .approved: return UIColor(red: 0.00, green: 0.90, blue: 0.46, alpha: 1.0)
+        case .passed: return UIColor(red: 0.00, green: 0.40, blue: 1.00, alpha: 1.0)
+        case .safetyFirst: return UIColor(red: 1.00, green: 0.42, blue: 0.00, alpha: 1.0)
+        case .urgent: return UIColor(red: 1.00, green: 0.09, blue: 0.27, alpha: 1.0)
+        case .handover: return UIColor(red: 0.49, green: 0.30, blue: 1.00, alpha: 1.0)
+        case .vipSeal: return UIColor(red: 1.00, green: 0.84, blue: 0.00, alpha: 1.0)
         }
     }
     
-    // MARK: - Draw on CoreGraphics Context (for Photo Rendering)
+    // MARK: - Draw on CoreGraphics Context (for High Res Watermark Rendering)
     public func draw(in context: CGContext, rect: CGRect) {
-        let w = rect.width
-        let h = rect.height
+        let size = min(rect.width, rect.height)
+        let cx = rect.midX
+        let cy = rect.midY
+        let radius = size / 2.0
         let color = uiColor
+        let isVi = LocalizationManager.shared.isVietnamese()
         
         context.saveGState()
         
-        switch self {
-        case .passedQC:
-            // Circular QC Seal
-            context.setFillColor(color.withAlphaComponent(0.20).cgColor)
-            context.fillEllipse(in: rect)
-            
-            context.setStrokeColor(color.cgColor)
-            context.setLineWidth(3.0 * (w / 140.0))
-            context.strokeEllipse(in: rect.insetBy(dx: 4, dy: 4))
-            
-            context.setStrokeColor(color.withAlphaComponent(0.6).cgColor)
-            context.setLineWidth(1.0 * (w / 140.0))
-            context.strokeEllipse(in: rect.insetBy(dx: 8, dy: 8))
-            
-            drawCenteredText(in: context, text: "★★★", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.18, width: w, height: h * 0.18), font: .boldSystemFont(ofSize: 13 * (w / 140)), color: color)
-            drawCenteredText(in: context, text: "NGHIỆM THU\nĐẠT", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.36, width: w, height: h * 0.35), font: .boldSystemFont(ofSize: 13 * (w / 140)), color: .white)
-            drawCenteredText(in: context, text: "QUALITY CONTROL\nPASSED", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.72, width: w, height: h * 0.22), font: .systemFont(ofSize: 7.5 * (w / 140), weight: .semibold), color: color)
-            
-        case .urgentDefect:
-            // Red Warning Octagon Seal
-            let insetRect = rect.insetBy(dx: 4, dy: 4)
-            let path = UIBezierPath(roundedRect: insetRect, cornerRadius: 18 * (w / 140))
-            context.setFillColor(color.withAlphaComponent(0.22).cgColor)
-            context.addPath(path.cgPath)
-            context.fillPath()
-            
-            context.setStrokeColor(color.cgColor)
-            context.setLineWidth(3.5 * (w / 140))
-            context.addPath(path.cgPath)
-            context.strokePath()
-            
-            drawCenteredText(in: context, text: "⚠", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.14, width: w, height: h * 0.24), font: .boldSystemFont(ofSize: 22 * (w / 140)), color: color)
-            drawCenteredText(in: context, text: "KHUYẾT TẬT", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.40, width: w, height: h * 0.22), font: .boldSystemFont(ofSize: 13 * (w / 140)), color: .white)
-            drawCenteredText(in: context, text: "CẦN XỬ LÝ GẤP\nURGENT ACTION", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.65, width: w, height: h * 0.26), font: .systemFont(ofSize: 8 * (w / 140), weight: .bold), color: color)
-            
-        case .safetyFirst:
-            // Green Shield Seal
-            let insetRect = rect.insetBy(dx: 6, dy: 6)
-            let path = UIBezierPath(roundedRect: insetRect, cornerRadius: 14 * (w / 140))
-            context.setFillColor(color.withAlphaComponent(0.20).cgColor)
-            context.addPath(path.cgPath)
-            context.fillPath()
-            
-            context.setStrokeColor(color.cgColor)
-            context.setLineWidth(3.0 * (w / 140))
-            context.addPath(path.cgPath)
-            context.strokePath()
-            
-            drawCenteredText(in: context, text: "✔", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.14, width: w, height: h * 0.24), font: .boldSystemFont(ofSize: 22 * (w / 140)), color: color)
-            drawCenteredText(in: context, text: "AN TOÀN", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.40, width: w, height: h * 0.22), font: .boldSystemFont(ofSize: 13 * (w / 140)), color: .white)
-            drawCenteredText(in: context, text: "LÀ TRÊN HẾT\nSAFETY FIRST", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.65, width: w, height: h * 0.26), font: .systemFont(ofSize: 8 * (w / 140), weight: .bold), color: color)
-            
-        case .architectVerified:
-            // Gold Seal
-            let insetRect = rect.insetBy(dx: 6, dy: 6)
-            let path = UIBezierPath(roundedRect: insetRect, cornerRadius: 10 * (w / 140))
-            context.setFillColor(color.withAlphaComponent(0.20).cgColor)
-            context.addPath(path.cgPath)
-            context.fillPath()
-            
-            context.setStrokeColor(color.cgColor)
-            context.setLineWidth(3.0 * (w / 140))
-            context.addPath(path.cgPath)
-            context.strokePath()
-            
-            drawCenteredText(in: context, text: "★ KTS ★", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.16, width: w, height: h * 0.20), font: .boldSystemFont(ofSize: 12 * (w / 140)), color: color)
-            drawCenteredText(in: context, text: "KIẾN TRÚC SƯ\nPHÊ DUYỆT", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.38, width: w, height: h * 0.32), font: .boldSystemFont(ofSize: 11.5 * (w / 140)), color: .white)
-            drawCenteredText(in: context, text: "ARCHITECT VERIFIED", rect: CGRect(x: rect.minX, y: rect.minY + h * 0.72, width: w, height: h * 0.20), font: .systemFont(ofSize: 7.5 * (w / 140), weight: .bold), color: color)
-        }
+        // 1. Semi-transparent center fill
+        context.setFillColor(color.withAlphaComponent(0.22).cgColor)
+        context.fillEllipse(in: CGRect(x: cx - radius * 0.92, y: cy - radius * 0.92, width: radius * 1.84, height: radius * 1.84))
+        
+        // 2. Outer Solid Ring
+        context.setStrokeColor(color.cgColor)
+        context.setLineWidth(size * 0.04)
+        context.strokeEllipse(in: CGRect(x: cx - radius * 0.92, y: cy - radius * 0.92, width: radius * 1.84, height: radius * 1.84))
+        
+        // 3. Dashed Inset Circle
+        let dashLengths: [CGFloat] = [size * 0.04, size * 0.03]
+        context.setLineDash(phase: 0, lengths: dashLengths)
+        context.setLineWidth(size * 0.018)
+        context.strokeEllipse(in: CGRect(x: cx - radius * 0.82, y: cy - radius * 0.82, width: radius * 1.64, height: radius * 1.64))
+        context.setLineDash(phase: 0, lengths: []) // reset dash
+        
+        // 4. Little decorative stars "★ ★ ★"
+        drawCenteredText(
+            in: context,
+            text: "★ ★ ★",
+            rect: CGRect(x: cx - radius * 0.75, y: cy - radius * 0.55, width: radius * 1.5, height: size * 0.16),
+            font: .boldSystemFont(ofSize: size * 0.11),
+            color: color
+        )
+        
+        // 5. Main Title
+        drawCenteredText(
+            in: context,
+            text: displayName(isVi: isVi),
+            rect: CGRect(x: cx - radius * 0.78, y: cy - radius * 0.18, width: radius * 1.56, height: size * 0.22),
+            font: .boldSystemFont(ofSize: size * 0.14),
+            color: .white
+        )
+        
+        // 6. Subtitle
+        drawCenteredText(
+            in: context,
+            text: displaySubtitle(isVi: isVi),
+            rect: CGRect(x: cx - radius * 0.78, y: cy + radius * 0.22, width: radius * 1.56, height: size * 0.18),
+            font: .systemFont(ofSize: size * 0.075, weight: .bold),
+            color: color
+        )
         
         context.restoreGState()
     }
@@ -147,6 +164,7 @@ public enum PhotoSticker: String, CaseIterable, Identifiable, Codable {
 public struct StickerBadgeView: View {
     public let sticker: PhotoSticker
     public var size: CGFloat = 100
+    @ObservedObject var loc = LocalizationManager.shared
     
     public init(sticker: PhotoSticker, size: CGFloat = 100) {
         self.sticker = sticker
@@ -154,68 +172,45 @@ public struct StickerBadgeView: View {
     }
     
     public var body: some View {
+        let isVi = loc.isVietnamese()
         ZStack {
-            // Background & Border
+            // Background fill
             Circle()
                 .fill(sticker.badgeColor.opacity(0.25))
-            Circle()
-                .stroke(sticker.badgeColor, lineWidth: 2.5)
-                .padding(2)
-            Circle()
-                .stroke(sticker.badgeColor.opacity(0.4), lineWidth: 1)
-                .padding(6)
             
-            VStack(spacing: 2) {
-                switch sticker {
-                case .passedQC:
-                    Text("★★★")
-                        .font(.system(size: size * 0.10, weight: .bold))
-                        .foregroundColor(sticker.badgeColor)
-                    Text("NGHIỆM THU\nĐẠT")
-                        .font(.system(size: size * 0.12, weight: .black))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                    Text("QUALITY CONTROL\nPASSED")
-                        .font(.system(size: size * 0.07, weight: .bold))
-                        .foregroundColor(sticker.badgeColor)
-                        .multilineTextAlignment(.center)
-                    
-                case .urgentDefect:
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: size * 0.20))
-                        .foregroundColor(sticker.badgeColor)
-                    Text("KHUYẾT TẬT")
-                        .font(.system(size: size * 0.12, weight: .black))
-                        .foregroundColor(.white)
-                    Text("CẦN XỬ LÝ GẤP")
-                        .font(.system(size: size * 0.075, weight: .bold))
-                        .foregroundColor(sticker.badgeColor)
-                    
-                case .safetyFirst:
-                    Image(systemName: "checkmark.shield.fill")
-                        .font(.system(size: size * 0.22))
-                        .foregroundColor(sticker.badgeColor)
-                    Text("AN TOÀN")
-                        .font(.system(size: size * 0.12, weight: .black))
-                        .foregroundColor(.white)
-                    Text("LÀ TRÊN HẾT")
-                        .font(.system(size: size * 0.075, weight: .bold))
-                        .foregroundColor(sticker.badgeColor)
-                    
-                case .architectVerified:
-                    Text("★ KTS ★")
-                        .font(.system(size: size * 0.10, weight: .bold))
-                        .foregroundColor(sticker.badgeColor)
-                    Text("KIẾN TRÚC SƯ\nPHÊ DUYỆT")
-                        .font(.system(size: size * 0.105, weight: .black))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                    Text("ARCHITECT VERIFIED")
-                        .font(.system(size: size * 0.065, weight: .bold))
-                        .foregroundColor(sticker.badgeColor)
-                }
+            // Outer Ring
+            Circle()
+                .stroke(sticker.badgeColor, lineWidth: size * 0.04)
+                .padding(size * 0.04)
+            
+            // Dashed Inset Circle
+            Circle()
+                .stroke(
+                    sticker.badgeColor.opacity(0.8),
+                    style: StrokeStyle(lineWidth: size * 0.018, dash: [size * 0.04, size * 0.03])
+                )
+                .padding(size * 0.10)
+            
+            // Content
+            VStack(spacing: size * 0.02) {
+                Text("★ ★ ★")
+                    .font(.system(size: size * 0.10, weight: .bold))
+                    .foregroundColor(sticker.badgeColor)
+                
+                Text(sticker.displayName(isVi: isVi))
+                    .font(.system(size: size * 0.12, weight: .black))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .shadow(color: Color.black.opacity(0.6), radius: 2, x: 0, y: 1)
+                
+                Text(sticker.displaySubtitle(isVi: isVi))
+                    .font(.system(size: size * 0.07, weight: .bold))
+                    .foregroundColor(sticker.badgeColor)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
             }
-            .padding(8)
+            .padding(.horizontal, size * 0.12)
         }
         .frame(width: size, height: size)
         .shadow(color: Color.black.opacity(0.5), radius: 6, x: 0, y: 3)

@@ -1,9 +1,10 @@
-﻿import SwiftUI
+import SwiftUI
 import CoreLocation
 
 // MARK: - Watermark Category
 public enum WatermarkCategory: String, CaseIterable, Codable, Identifiable {
     case engineering = "Công trình"
+    case office = "Văn phòng"
     case attendance = "Chấm công"
     case patrol = "Tuần tra"
     case travel = "Du lịch"
@@ -15,6 +16,7 @@ public enum WatermarkCategory: String, CaseIterable, Codable, Identifiable {
     public var iconName: String {
         switch self {
         case .engineering: return "hammer.fill"
+        case .office: return "briefcase.fill"
         case .attendance: return "person.badge.clock.fill"
         case .patrol: return "shield.checkerboard"
         case .travel: return "airplane.departure"
@@ -29,6 +31,7 @@ public enum WatermarkCategory: String, CaseIterable, Codable, Identifiable {
         case .english:
             switch self {
             case .engineering: return "Engineering"
+            case .office: return "Office"
             case .attendance: return "Attendance"
             case .patrol: return "Patrol"
             case .travel: return "Travel"
@@ -238,8 +241,8 @@ public extension WatermarkTemplate {
             badgeStyle: .glassmorphism,
             colorTheme: .safetyOrange,
             position: .bottomLeft,
-            activeFilter: .original,
-            activeSticker: .passedQC,
+            activeFilter: .warmSunlight,
+            activeSticker: .passed,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -266,7 +269,7 @@ public extension WatermarkTemplate {
             colorTheme: .blueprintBlue,
             position: .bottomLeft,
             activeFilter: .cinematic,
-            activeSticker: .architectVerified,
+            activeSticker: .approved,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -284,7 +287,34 @@ public extension WatermarkTemplate {
             customNotes: "Mẫu R-28 đạt mác M350"
         ),
         
-        // 3. Work Attendance / Check-in
+        // 3. Office & Administrative Work Handover
+        WatermarkTemplate(
+            id: "office_admin_handover",
+            name: "Văn phòng & Ký nhận hồ sơ",
+            category: .office,
+            badgeStyle: .darkCard,
+            colorTheme: .blueprintBlue,
+            position: .bottomLeft,
+            activeFilter: .elegant,
+            activeSticker: .handover,
+            showTime: true,
+            showSeconds: true,
+            showLocation: true,
+            showCoordinates: true,
+            showAltitude: false,
+            showWeather: false,
+            showCompass: false,
+            showDeviceInfo: true,
+            showAntiCounterfeitQR: true,
+            titleText: "BÀN GIAO & KÝ NHẬN HỒ SƠ",
+            projectName: "Hồ sơ nghiệm thu thanh quyết toán",
+            workItem: "Biên nhận bàn giao chứng từ gốc đợt 3",
+            contractorName: "Phòng Hành chính - Kế toán",
+            inspectorName: "Người nhận: Trần Mai Anh",
+            customNotes: "Đã kiểm đếm đầy đủ chữ ký & con dấu niêm phong"
+        ),
+        
+        // 4. Work Attendance / Check-in
         WatermarkTemplate(
             id: "att_standard_checkin",
             name: "Chấm công hiện trường",
@@ -293,7 +323,7 @@ public extension WatermarkTemplate {
             colorTheme: .emeraldGreen,
             position: .bottomLeft,
             activeFilter: .original,
-            activeSticker: nil,
+            activeSticker: .approved,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -311,7 +341,7 @@ public extension WatermarkTemplate {
             customNotes: "Check-in đúng giờ ca 08:00"
         ),
         
-        // 4. Field Patrol & Safety Inspection
+        // 5. Field Patrol & Safety Inspection
         WatermarkTemplate(
             id: "patrol_safety_inspect",
             name: "Tuần tra an toàn PCCC",
@@ -319,7 +349,7 @@ public extension WatermarkTemplate {
             badgeStyle: .glassmorphism,
             colorTheme: .goldenYellow,
             position: .bottomLeft,
-            activeFilter: .warmSunlight,
+            activeFilter: .original,
             activeSticker: .safetyFirst,
             showTime: true,
             showSeconds: true,
@@ -338,7 +368,7 @@ public extension WatermarkTemplate {
             customNotes: "Áp suất bình chữa cháy bình thường"
         ),
         
-        // 5. Defect Report
+        // 6. Defect Report
         WatermarkTemplate(
             id: "eng_defect_report",
             name: "Báo cáo lỗi & Khuyết tật",
@@ -347,7 +377,7 @@ public extension WatermarkTemplate {
             colorTheme: .crimsonRed,
             position: .bottomLeft,
             activeFilter: .original,
-            activeSticker: .urgentDefect,
+            activeSticker: .urgent,
             showTime: true,
             showSeconds: true,
             showLocation: true,
@@ -365,7 +395,7 @@ public extension WatermarkTemplate {
             customNotes: "Phát hiện vết rạn nứt bề mặt vữa ngoài"
         ),
         
-        // 6. Travel & Lifestyle
+        // 7. Travel & Lifestyle Check-in
         WatermarkTemplate(
             id: "travel_lifestyle",
             name: "Check-in Du lịch",
@@ -374,7 +404,7 @@ public extension WatermarkTemplate {
             colorTheme: .crispWhite,
             position: .bottomRight,
             activeFilter: .fleetingYears,
-            activeSticker: nil,
+            activeSticker: .vipSeal,
             showTime: true,
             showSeconds: false,
             showLocation: true,
@@ -392,7 +422,7 @@ public extension WatermarkTemplate {
             customNotes: "Thời tiết se lạnh 19°C tuyệt đẹp"
         ),
         
-        // 7. Minimal Clean
+        // 8. Minimal Clean
         WatermarkTemplate(
             id: "minimal_timestamp",
             name: "Tối giản thời gian & GPS",

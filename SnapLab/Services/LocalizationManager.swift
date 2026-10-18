@@ -1,4 +1,4 @@
-﻿import SwiftUI
+import SwiftUI
 import Combine
 
 public enum AppLanguage: String, CaseIterable, Identifiable, Codable {
@@ -109,6 +109,7 @@ public class LocalizationManager: ObservableObject {
         // Categories
         "all": [.vietnamese: "Tất cả", .english: "All"],
         "catEngineering": [.vietnamese: "Công trình", .english: "Engineering"],
+        "catOffice": [.vietnamese: "Văn phòng", .english: "Office"],
         "catAttendance": [.vietnamese: "Chấm công", .english: "Attendance"],
         "catPatrol": [.vietnamese: "Tuần tra", .english: "Patrol"],
         "catTravel": [.vietnamese: "Du lịch", .english: "Travel"],

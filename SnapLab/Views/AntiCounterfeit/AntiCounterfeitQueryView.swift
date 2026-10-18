@@ -13,7 +13,11 @@ public struct AntiCounterfeitQueryView: View {
     @State private var isAnalyzing: Bool = false
     @State private var tamperingDetected: Bool = false
     
-    public init() {}
+    public init(initialQueryId: String? = nil) {
+        if let initId = initialQueryId, !initId.isEmpty {
+            self._queryInputId = State(initialValue: initId)
+        }
+    }
     
     public var body: some View {
         NavigationView {
@@ -56,6 +60,11 @@ public struct AntiCounterfeitQueryView: View {
             .background(Color.snapBackgroundDark.edgesIgnoringSafeArea(.all))
             .navigationTitle(loc.t("queryTitle"))
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                if !queryInputId.trimmingCharacters(in: .whitespaces).isEmpty {
+                    queryById(queryInputId)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(loc.t("close")) {
@@ -236,7 +245,19 @@ public struct AntiCounterfeitQueryView: View {
     // MARK: - Logic
     private func analyzeUploadedImage(_ image: UIImage) {
         isAnalyzing = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            // 1. Attempt to decode embedded QR code first
+            if let qrPayload = antiCounterfeitingManager.decodeQRCode(from: image) {
+                let qrResult = antiCounterfeitingManager.verifyQuery(qrPayload)
+                if qrResult.status == .authentic, let rec = qrResult.record {
+                    self.tamperingDetected = false
+                    self.verificationResult = (.authentic, rec)
+                    self.isAnalyzing = false
+                    return
+                }
+            }
+            
+            // 2. Fall back to SHA-256 pixel checksum verification
             let hash = antiCounterfeitingManager.computeSHA256(for: image)
             
             // Search in ledger if any record matches

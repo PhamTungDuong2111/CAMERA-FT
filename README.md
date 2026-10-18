@@ -117,31 +117,82 @@ CAMERA-FT/
 
 ---
 
-## 🚀 Hướng Dẫn Mở & Chạy Dự Án Trên macOS
+## 🔄 Bảng Đối Soát Tính Năng Đồng Bộ 100% (Android Kotlin ↔ iOS Swift)
 
-### Yêu cầu hệ thống
-- Máy Mac chạy macOS Monterey, Ventura, Sonoma hoặc mới hơn (tương thích cả chip Apple Silicon M1/M2/M3/M4 và Intel).
-- Đã cài đặt **Xcode** (từ Mac App Store hoặc developer.apple.com).
+| Tính Năng Nghiệp Vụ | Bản Android (`CAMERA-FT-ADR`) | Bản iOS (`SnapLab`) | Công Nghệ Native iOS |
+|---|---|---|---|
+| **Ngôn ngữ & Nền tảng** | 100% Kotlin + Jetpack Compose | 100% Native Swift + SwiftUI | Swift 5.0, SwiftUI, Combine |
+| **Máy ảnh chụp ảnh HD** | CameraX ImageCapture | AVFoundation AVCapturePhotoOutput | `AVCaptureSession`, `AVCapturePhotoOutput` |
+| **Quay Video Watermark** | CameraX VideoCapture | AVFoundation AVCaptureMovieFileOutput | `AVCaptureMovieFileOutput` |
+| **Tọa độ GPS & Giải mã địa chỉ** | FusedLocationProviderClient + Geocoder | CoreLocation + CLGeocoder | `CLLocationManager`, `CLGeocoder` |
+| **La bàn & Hướng nhìn** | SensorManager (Azimuth) | CoreLocation Heading (`CLHeading`) | `locationManager.startUpdatingHeading()` |
+| **Bộ lọc ảnh phong cách & sáng tạo** | 10 bộ lọc (ColorMatrix + Paint) | 10 bộ lọc Core Image tương ứng | `CIFilter` (Sepia, Comic, Noir, NoirBW, etc.) |
+| **Hệ thống nhãn dán nghiệp vụ** | 6 nhãn (APPROVED, PASSED, SAFETY, URGENT, HANDOVER, VIP) | 6 nhãn đồng bộ 100% | `CoreGraphics` Canvas + `StickerBadgeView` |
+| **Thư viện mẫu dấu hiện trường** | 8 mẫu (Công trình, Văn phòng, Chấm công, Tuần tra, Sự cố, Du lịch, Tối giản) | 8 mẫu đồng bộ 100% | `WatermarkTemplate.presets` |
+| **Mã hóa chống giả mạo SHA-256** | MessageDigest SHA-256 Ledger | Apple CryptoKit `SHA256.hash` | `CryptoKit`, `Insecure.MD5` |
+| **Quét & đọc mã QR từ ảnh** | ZXing QR Decoder | CoreImage `CIDetector` QR Detector | `CIDetector(ofType: CIDetectorTypeQRCode)` |
+| **Đóng dấu ảnh có sẵn từ Album** | ActivityResultContracts.GetContent | PhotosUI `SystemImagePicker` + Sheet | `PHPhotoLibrary`, `PhotosUI` |
+| **Deep Link xác thực** | `snaplab://verify?...` | `snaplab://verify?...` (URL Types) | `CFBundleURLTypes`, `.onOpenURL` |
+| **Song ngữ tức thì** | Tiếng Việt 🇻🇳 & English 🇺🇸 | Tiếng Việt 🇻🇳 & English 🇺🇸 | `LocalizationManager.shared` |
 
-### Các bước khởi chạy:
+---
 
-1. **Sao chép thư mục dự án lên máy Mac**:
-   Bạn copy toàn bộ thư mục `CAMERA-FT` sang máy Mac (hoặc giải nén nếu chuyển qua USB / AirDrop / Git).
+## 🚀 Hướng Dẫn Mở Bằng Xcode & Build Chạy Trên iPhone Thật (Physical Device)
 
-2. **Mở dự án bằng Xcode**:
-   Nhấp đúp chuột vào tệp `SnapLab.xcodeproj` hoặc mở Terminal trên macOS và chạy:
-   ```bash
-   cd /duong-dan-toi/CAMERA-FT
-   open SnapLab.xcodeproj
-   ```
+### Yêu cầu chuẩn bị
+- **Máy tính Mac**: Chạy macOS Monterey, Ventura, Sonoma hoặc Sequoia (Apple Silicon M1/M2/M3/M4 hoặc chip Intel).
+- **Phần mềm Xcode**: Phiên bản Xcode 14, 15, 16 hoặc mới hơn (tải miễn phí từ Mac App Store).
+- **iPhone thật**: Chạy iOS 16.0 trở lên kết nối với máy Mac bằng cáp sạc Lightning / USB-C (hoặc qua Wi-Fi).
+- **Tài khoản Apple ID**: Bạn chỉ cần Apple ID cá nhân miễn phí (không bắt buộc tài khoản trả phí $99/năm để test trên máy thật).
 
-3. **Chọn Thiết Bị Chạy (Run Destination)**:
-   Tại thanh trên cùng của Xcode (cạnh nút Run):
-   - Để chạy ứng dụng trực tiếp như một **cửa sổ Mac App**: Chọn **`My Mac (Mac Catalyst)`** hoặc **`My Mac (Designed for iPad)`**.
-   - Để chạy trong giả lập điện thoại: Chọn một máy giả lập ví dụ **`iPhone 16 Pro`** hoặc **`iPad Pro`**.
-   - Để cắm cáp chạy lên iPhone thật: Cắm iPhone vào máy Mac và chọn thiết bị của bạn.
+---
 
-4. **Bấm Chạy (Run)**:
-   - Nhấn tổ hợp phím **`Cmd + R`** (hoặc nhấn nút hình tam giác ▶️ ở góc trên bên trái Xcode).
-   - Dự án sẽ được biên dịch và khởi chạy ngay lập tức trên macOS!
-   - Khi chạy lần đầu, hãy cấp quyền truy cập **Camera**, **Vị trí (Location)** và **Ảnh (Photos)** khi hệ thống hỏi để ứng dụng tự động điền tọa độ và chụp ảnh thực tế.
+### Các Bước Thực Hiện Chi Tiết:
+
+#### Bước 1: Mở dự án trong Xcode
+1. Mở thư mục dự án `CAMERA-FT` trên máy Mac.
+2. Nhấp đúp chuột vào tệp `SnapLab.xcodeproj` (hoặc mở Terminal gõ `open SnapLab.xcodeproj`).
+
+#### Bước 2: Bật "Chế độ nhà phát triển" (Developer Mode) trên iPhone thật
+> **Lưu ý quan trọng cho iOS 16, 17 và 18:**
+1. Trên iPhone của bạn, vào **Cài đặt (Settings)** > **Quyền riêng tư & Bảo mật (Privacy & Security)**.
+2. Cuộn xuống dưới cùng, chọn **Chế độ nhà phát triển (Developer Mode)**.
+3. Bật công tắc sang **ON** và nhấn **Khởi động lại (Restart)** điện thoại khi được nhắc.
+4. Sau khi khởi động lại, mở khóa iPhone và nhấn **Bật (Turn On)** > Nhập mật khẩu mở khóa màn hình.
+
+#### Bước 3: Cấu hình tài khoản ký số (Signing & Team) trong Xcode
+1. Trong Xcode, nhấp vào tên dự án **SnapLab** ở cột điều hướng bên trái (dòng màu xanh trên cùng).
+2. Chọn target **SnapLab** dưới mục TARGETS.
+3. Chuyển sang tab **Signing & Capabilities**.
+4. Tích chọn **`Automatically manage signing`**.
+5. Tại mục **Team**:
+   - Nếu đã đăng nhập Apple ID: Nhấp vào menu thả xuống và chọn tên của bạn (dạng `Tên Bạn (Personal Team)`).
+   - Nếu chưa đăng nhập: Nhấp vào **Add an Account...** > Nhập tài khoản Apple ID và mật khẩu của bạn.
+6. Tại mục **Bundle Identifier**:
+   - Nếu Xcode báo lỗi trùng bundle ID, bạn chỉ cần thêm một vài ký tự vào đuôi (ví dụ: `com.snaplab.camerafilter.mytest`).
+
+#### Bước 4: Chọn iPhone thật làm thiết bị chạy (Run Destination)
+1. Cắm cáp kết nối iPhone với máy Mac (trên iPhone chọn **Tin cậy máy tính này / Trust This Computer** nếu được hỏi).
+2. Tại thanh công cụ phía trên cùng của Xcode (bên cạnh nút ▶️ Run):
+   - Nhấp vào mục chọn thiết bị (thường đang hiển thị Simulator hoặc My Mac).
+   - Cuộn lên phần **iOS Devices** và nhấp chọn tên chiếc **iPhone của bạn** (ví dụ: `iPhone của Tùng Dương`).
+
+#### Bước 5: Biên dịch và chạy ứng dụng (Cmd + R)
+1. Nhấn tổ hợp phím **`Cmd + R`** (hoặc nhấn nút ▶️ Run ở góc trên bên trái Xcode).
+2. Xcode sẽ tự động biên dịch mã nguồn Swift 100% Native, tạo gói ứng dụng và cài đặt trực tiếp lên iPhone của bạn.
+
+#### Bước 6: Tin cậy chứng chỉ nhà phát triển (Lần đầu tiên trên iPhone)
+Khi chạy lần đầu, iPhone có thể hiển thị thông báo "Nhà phát triển không tin cậy (Untrusted Developer)":
+1. Mở iPhone > Vào **Cài đặt (Settings)** > **Cài đặt chung (General)** > **Quản lý VPN & Thiết bị (VPN & Device Management)**.
+2. Dưới mục **Ứng dụng của nhà phát triển (Developer App)**, nhấp vào Apple ID của bạn.
+3. Nhấn **Tin cậy (Trust) "[Tên Apple ID]"** > Xác nhận **Tin cậy (Trust)**.
+4. Trở về màn hình chính iPhone và nhấp mở ứng dụng **SnapLab**!
+5. Cấp quyền **Camera**, **Vị trí (Location)** và **Ảnh (Photos)** để ứng dụng tự động lấy địa chỉ GPS thực tế, thời tiết, la bàn và chụp ảnh đóng dấu chuyên nghiệp.
+
+---
+
+### Chạy Trên Máy Giả Lập Hoặc Trực Tiếp Trên macOS (Mac Catalyst)
+- Nếu chưa có sẵn iPhone hoặc cáp nối, bạn có thể:
+  - Chọn máy giả lập (ví dụ `iPhone 16 Pro`) trong menu Xcode rồi nhấn `Cmd + R`.
+  - Chọn **`My Mac (Mac Catalyst)`** để chạy SnapLab như một cửa sổ phần mềm Mac máy tính độc lập (hỗ trợ cả FaceTime Camera và chế độ Synthetic Camera mô phỏng).
+

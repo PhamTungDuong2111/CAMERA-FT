@@ -27,6 +27,10 @@ public enum CameraAspectRatio: String, CaseIterable {
     case ratio16_9 = "16:9"
     case ratio1_1 = "1:1"
     case full = "Full"
+    
+    public static var ratio4x3: CameraAspectRatio { .ratio4_3 }
+    public static var ratio16x9: CameraAspectRatio { .ratio16_9 }
+    public static var ratio1x1: CameraAspectRatio { .ratio1_1 }
 }
 
 public class CameraManager: NSObject, ObservableObject {
@@ -179,6 +183,16 @@ public class CameraManager: NSObject, ObservableObject {
                 self.currentPosition = newPosition
                 self.zoomFactor = 1.0
             }
+        }
+    }
+    
+    public func toggleCameraFacing() {
+        flipCamera()
+    }
+    
+    public func toggleGrid() {
+        DispatchQueue.main.async {
+            self.showGrid.toggle()
         }
     }
     

@@ -34,6 +34,19 @@
 	<string>SnapLab cần quyền truy cập Thư viện ảnh để chọn ảnh cần đóng dấu watermark và xem thư viện.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>SnapLab cần quyền lưu ảnh và video đã gắn watermark chất lượng cao vào album của bạn.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.snaplab.camerafilter</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>snaplab</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

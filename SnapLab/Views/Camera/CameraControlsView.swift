@@ -1,4 +1,4 @@
-﻿import SwiftUI
+import SwiftUI
 
 public enum CameraMode: String, CaseIterable {
     case photo
@@ -364,6 +364,15 @@ public struct CameraControlsView: View {
     }
     
     private func cycleAspectRatio() {
-        cameraManager.aspectRatio = cameraManager.aspectRatio == .ratio4x3 ? .ratio16x9 : .ratio4x3
+        switch cameraManager.aspectRatio {
+        case .ratio4_3:
+            cameraManager.aspectRatio = .ratio16_9
+        case .ratio16_9:
+            cameraManager.aspectRatio = .ratio1_1
+        case .ratio1_1:
+            cameraManager.aspectRatio = .full
+        case .full:
+            cameraManager.aspectRatio = .ratio4_3
+        }
     }
 }
